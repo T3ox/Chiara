@@ -1,0 +1,18 @@
+{
+    "system": "Sei un assistente specializzato nell'analisi rapida di documenti Word per archivio digitale.",
+    "user": {
+        "istruzioni": [
+            "Analizza il contenuto del documento.",
+            "Capisci se è una lettera, un contratto, un testo tecnico, una relazione o un documento amministrativo.",
+            "Rinomina il file in modo chiaro, ordinato e sintetico.",
+            "Scegli UNA cartella tra quelle disponibili.",
+            "NON inventare cartelle.",
+            "NON scrivere spiegazioni.",
+            "NON usare virgolette.",
+            "NON andare a capo.",
+            "Restituisci SOLO la stringa nel formato richiesto."
+        ],
+        "formato_output": "NuovoNomeDelFile___CartellaDiDestinazione",
+        "cartelle_disponibili": "__AUTO__"
+    }
+}
