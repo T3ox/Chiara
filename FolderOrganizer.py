@@ -1,3 +1,4 @@
+import sys
 import os
 import json
 import shutil
@@ -24,8 +25,17 @@ from PIL import Image
 # PATHS (la tua struttura)
 # =========================
 BASE_DIR = Path(__file__).resolve().parent  # cartella dove sta lo script
+
+# Default inputs
 INPUT_DIR = BASE_DIR / "INPUT_FILES"
-RESULT_DIR = BASE_DIR / "RESULT"
+
+# Override da CLI args (se lanciato da Launcher)
+if len(sys.argv) > 1:
+    possible_path = Path(sys.argv[1])
+    if possible_path.exists() and possible_path.is_dir():
+        INPUT_DIR = possible_path.resolve()
+
+RESULT_DIR = INPUT_DIR  # Organizza direttamente nella cartella di input (sottocartelle)
 CODES_DIR = BASE_DIR  # prompt json stanno qui
 ENV_PATH = BASE_DIR / ".env"
 
@@ -62,7 +72,7 @@ IMAGE_MAX_SIDE = 1400           # riduzione immagini per invio più leggero
 load_dotenv(dotenv_path=ENV_PATH)
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 if not OPENAI_API_KEY:
-    raise ValueError("❌ OPENAI_API_KEY non trovata. Mettila nel file .env nella stessa cartella dello script.")
+    raise ValueError(" OPENAI_API_KEY non trovata. Mettila nel file .env nella stessa cartella dello script.")
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
@@ -81,7 +91,7 @@ def sanitize_filename(name: str) -> str:
     return name
 
 def log_api_call(file_path: Path, mode: str):
-    print(f"🌐 API CALL → {file_path.name}  [{mode}]")
+    print(f" API CALL  {file_path.name}  [{mode}]")
 
 def is_file_safe_to_read(file_path: Path) -> tuple[bool, str]:
     if not file_path.exists():
@@ -129,7 +139,7 @@ def move_with_retry(src: Path, dst: Path, attempts: int = 6, sleep_s: float = 0.
 # =========================
 def ensure_result_folders() -> list[str]:
     if not RESULT_DIR.exists():
-        raise FileNotFoundError("❌ Cartella RESULT non trovata. Creala e mettici dentro le cartelle di destinazione.")
+        raise FileNotFoundError(" Cartella di input non trovata.")
 
     # crea DaRevisionare se manca
     da_rev = RESULT_DIR / "DaRevisionare"
@@ -137,9 +147,9 @@ def ensure_result_folders() -> list[str]:
 
     folders = [f.name for f in RESULT_DIR.iterdir() if f.is_dir()]
     if not folders:
-        raise ValueError("❌ Nessuna sottocartella trovata dentro RESULT (anche se DaRevisionare dovrebbe esserci).")
+        raise ValueError(" Nessuna sottocartella trovata nella cartella di input (anche se DaRevisionare dovrebbe esserci).")
 
-    print("\n📂 Cartelle disponibili in RESULT:")
+    print(f"\nCartelle disponibili in: {RESULT_DIR}")
     for f in folders:
         print(f" - {f}")
     print()
@@ -154,7 +164,7 @@ def check_prompts_exist():
     needed = set(SUPPORTED_EXT.values()) | {DEFAULT_PROMPT}
     missing = [p for p in needed if not (CODES_DIR / p).exists()]
     if missing:
-        raise FileNotFoundError(f"❌ Prompt mancanti nella cartella dello script: {missing}")
+        raise FileNotFoundError(f" Prompt mancanti nella cartella dello script: {missing}")
 
 
 def load_prompt_for_ext(ext: str, folders: list[str]) -> dict:
@@ -418,9 +428,9 @@ def move_to_result(file_path: Path, folder: str, new_stem: str):
 
     ok = move_with_retry(file_path, dest_path)
     if not ok:
-        print(f"⏭️  Non spostato (file in uso): {file_path.name} — chiudi eventuali anteprime/Explorer e rilancia")
+        print(f"  Non spostato (file in uso): {file_path.name}  chiudi eventuali anteprime/Explorer e rilancia")
         return
-    print(f"✅ Spostato in: {dest_path}")
+    print(f" Spostato in: {dest_path}")
 
 
 def move_to_revision(file_path: Path, reason: str = ""):
@@ -428,7 +438,7 @@ def move_to_revision(file_path: Path, reason: str = ""):
     stem = file_path.stem
     new_stem = f"FAILED_{stem}"
     if reason:
-        print(f"⚠️  DaRevisionare: {file_path.name} ({reason})")
+        print(f"  DaRevisionare: {file_path.name} ({reason})")
     move_to_result(file_path, folder, new_stem)
 
 
@@ -650,10 +660,10 @@ def local_classify(filename: str, ext: str, text: str, available_folders: List[s
 def process_one(file_path: Path, folders: list[str]):
     ok, reason = is_file_safe_to_read(file_path)
     if is_windows_file_locked(file_path):
-        print(f"⏭️  Skip (file aperto/in uso): {file_path.name} — chiudilo e rilancia")
+        print(f"  Skip (file aperto/in uso): {file_path.name}  chiudilo e rilancia")
         return
     if not ok:
-        print(f"⏭️  Skip: {file_path.name} ({reason})")
+        print(f"  Skip: {file_path.name} ({reason})")
         return
 
     if not file_path.suffix:
@@ -663,7 +673,7 @@ def process_one(file_path: Path, folders: list[str]):
     ext = file_path.suffix.lower()
     prompt = load_prompt_for_ext(ext, folders)
 
-    print(f"📄 Analizzo: {file_path.name}")
+    print(f" Analizzo: {file_path.name}")
     raw = ""
 
     try:
@@ -688,7 +698,7 @@ def process_one(file_path: Path, folders: list[str]):
             hit = local_classify(file_path.name, ext, text, folders)
             if hit and hit.score >= 80:
                 move_to_result(file_path, hit.folder, sanitize_filename(file_path.stem))
-                print(f"⚡ Classificato LOCAL: {hit.folder} ({hit.score}) - {hit.reason}")
+                print(f" Classificato LOCAL: {hit.folder} ({hit.score}) - {hit.reason}")
                 return
 
             log_api_call(file_path, "DOCX")
@@ -704,7 +714,7 @@ def process_one(file_path: Path, folders: list[str]):
             hit = local_classify(file_path.name, ext, text, folders)
             if hit and hit.score >= 80:
                 move_to_result(file_path, hit.folder, sanitize_filename(file_path.stem))
-                print(f"⚡ Classificato LOCAL: {hit.folder} ({hit.score}) - {hit.reason}")
+                print(f" Classificato LOCAL: {hit.folder} ({hit.score}) - {hit.reason}")
                 return
 
             log_api_call(file_path, "XLSX")
@@ -720,7 +730,7 @@ def process_one(file_path: Path, folders: list[str]):
                     if not text.strip():
                         move_to_revision(file_path, "doc->docx ma testo vuoto")
                         return
-                    log_api_call(file_path, "DOC→DOCX")
+                    log_api_call(file_path, "DOCDOCX")
                     raw = call_openai_with_text(prompt, text, file_path.name)
                 else:
                     move_to_revision(file_path, "DOC non supportato")
@@ -733,7 +743,7 @@ def process_one(file_path: Path, folders: list[str]):
                     if not text.strip():
                         move_to_revision(file_path, "xls->xlsx ma contenuto vuoto")
                         return
-                    log_api_call(file_path, "XLS→XLSX")
+                    log_api_call(file_path, "XLSXLSX")
                     raw = call_openai_with_text(prompt, text, file_path.name)
                 else:
                     move_to_revision(file_path, "XLS non supportato")
@@ -746,7 +756,7 @@ def process_one(file_path: Path, folders: list[str]):
                     if not text.strip():
                         move_to_revision(file_path, "numbers->xlsx ma contenuto vuoto")
                         return
-                    log_api_call(file_path, "NUMBERS→XLSX")
+                    log_api_call(file_path, "NUMBERSXLSX")
                     raw = call_openai_with_text(prompt, text, file_path.name)
                 else:
                     move_to_revision(file_path, "NUMBERS non supportato")
@@ -793,19 +803,19 @@ def is_windows_file_locked(file_path: Path) -> bool:
             p.mkdir(parents=True, exist_ok=True)
             created += 1
 
-    print(f"✅ Bootstrap completato. Cartelle create/verificate in RESULT. Nuove create: {created}")
+    print(f" Bootstrap completato. Cartelle create/verificate in RESULT. Nuove create: {created}")
 
 
 def main():
     if not INPUT_DIR.exists():
-        raise FileNotFoundError("❌ Cartella INPUT_FILES non trovata.")
+        raise FileNotFoundError(" Cartella INPUT_FILES non trovata.")
 
     check_prompts_exist()
     folders = ensure_result_folders()
 
     files = [p for p in INPUT_DIR.iterdir() if p.is_file()]
     if not files:
-        print("📂 Nessun file da processare in INPUT_FILES.")
+        print(" Nessun file da processare in INPUT_FILES.")
         return
 
     for fp in files:
@@ -813,7 +823,7 @@ def main():
             process_one(fp, folders)
         except Exception as e:
             # Non deve mai crashare tutto
-            print(f"🔥 Errore su {fp.name}: {e}")
+            print(f" Errore su {fp.name}: {e}")
             try:
                 move_to_revision(fp, f"crash generico: {e}")
             except Exception:
