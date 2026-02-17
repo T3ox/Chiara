@@ -17,4 +17,3 @@ htmlcov/
 .DS_Store
 Thumbs.db
 *.log
-site/package-lock.json
