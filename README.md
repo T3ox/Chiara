@@ -1,17 +1,19 @@
-# FolderOrganizer
+﻿# FolderOrganizer
 
 Repository organizzato in due aree:
 
-- `site/`: landing web (FastAPI + Jinja, no npm)
+- `site/`: frontend landing in React + Vite
 - `programma/`: script FolderOrganizer + prompt JSON + `.env`
 
-## Avvio sito
+## Avvio sito (React + Vite)
 
 ```powershell
 cd site
-python -m pip install -r requirements.txt
-python -m uvicorn app.main:app --reload
+npm install
+npm run dev
 ```
+
+Apri `http://127.0.0.1:5173`.
 
 ## Avvio programma
 
