@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("FolderOrganizerLauncher")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2a8e3599a448366e135de6151cf2ecc31a5f497e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+992f4311346cf7324f74c5206e23bcc74ac81e27")]
 [assembly: System.Reflection.AssemblyProductAttribute("FolderOrganizerLauncher")]
 [assembly: System.Reflection.AssemblyTitleAttribute("FolderOrganizerLauncher")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
