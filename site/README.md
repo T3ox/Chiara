@@ -1,22 +1,25 @@
-# FolderOrganizer Site (No-NPM)
+﻿# FolderOrganizer Site (React + Vite)
 
-Landing commerciale realizzata con FastAPI + Jinja + asset statici CSS/JS.
+Landing commerciale sviluppata con React, Vite e React Router.
 
 ## Requisiti
 
-- Python 3.11+ (consigliato)
+- Node.js 18+
 
 ## Avvio locale
 
 ```powershell
 cd site
-python -m pip install -r requirements.txt
-python -m uvicorn app.main:app --reload
+npm install
+npm run dev
 ```
 
-Apri:
+Build produzione:
 
-- `http://127.0.0.1:8000/`
+```powershell
+npm run build
+npm run preview
+```
 
 ## Rotte principali
 
@@ -25,4 +28,8 @@ Apri:
 - `/privacy`
 - `/accedi`
 - `/termini`
-- `/account/{path}` (alias placeholder accesso)
+- `/account/*` (alias placeholder accesso)
+
+## Nota
+
+La precedente implementazione FastAPI/Jinja e stata conservata in `site/_legacy_fastapi/`.
