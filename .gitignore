@@ -17,3 +17,7 @@ htmlcov/
 .DS_Store
 Thumbs.db
 *.log
+
+# .NET
+**/bin/
+**/obj/

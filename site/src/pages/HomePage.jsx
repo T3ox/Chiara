@@ -49,6 +49,11 @@ export default function HomePage() {
               <span className="chip">Output uniformi</span>
               <span className="chip">Adozione progressiva</span>
             </div>
+            <div className="hero-meta-grid" aria-label="Dettagli operativi">
+              <span className="meta-pill"><strong>Modalita:</strong> Preview/confirm</span>
+              <span className="meta-pill"><strong>Duplicati:</strong> In arrivo</span>
+              <span className="meta-pill"><strong>Ambito:</strong> File misti aziendali</span>
+            </div>
           </div>
 
           <div className="hero-visual fade-in reveal-on-scroll">
@@ -132,9 +137,15 @@ export default function HomePage() {
             <p>Output pronti per condivisione interna, audit e comunicazione al cliente.</p>
           </article>
         </div>
+        <div className="how-meta-row reveal-on-scroll" aria-label="Dettagli workflow">
+          <span className="how-meta-pill">Step totali: 3</span>
+          <span className="how-meta-pill">Pipeline: .NET + Python + OpenAI</span>
+          <span className="how-meta-pill">Conferma richiesta prima dell'applicazione</span>
+        </div>
+        <div className="content-divider reveal-on-scroll" aria-hidden="true"></div>
       </section>
 
-      <section className="section shell">
+      <section className="section shell" id="perche">
         <div className="section-head reveal-on-scroll">
           <h2>Perche e diverso da strumenti generalisti</h2>
           <p className="muted-note">FolderOrganizer e focalizzato sulla qualita dell'esecuzione documentale, non su funzionalita dispersive.</p>
@@ -155,7 +166,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="section shell">
+      <section className="section shell" id="confronto">
         <div className="section-head reveal-on-scroll">
           <h2>Governance, sicurezza e continuita</h2>
           <p className="muted-note">Scelte tecniche orientate a controllo, conformita interna e riduzione del rischio operativo.</p>
@@ -180,12 +191,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="section shell">
+      <section className="section shell" id="faq">
         <h2>Domande frequenti</h2>
         <Accordion items={faqItems} />
       </section>
 
-      <section className="section shell final-cta">
+      <section className="section shell final-cta" id="demo">
         <div className="callout">
           <div>
             <h2>Vuoi valutare il fit operativo sul tuo contesto?</h2>

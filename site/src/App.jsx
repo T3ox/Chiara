@@ -21,18 +21,30 @@ function useRevealOnScroll() {
     }
 
     const observer = new IntersectionObserver(
-      (entries, currentObserver) => {
+      (entries) => {
         entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-          entry.target.classList.add("reveal--in");
-          currentObserver.unobserve(entry.target);
+          const target = entry.target;
+          if (entry.isIntersecting) {
+            target.classList.add("reveal--in");
+            target.classList.remove("reveal--out-up", "reveal--out-down");
+            return;
+          }
+
+          target.classList.remove("reveal--in");
+          if (entry.boundingClientRect.top < 0) {
+            target.classList.add("reveal--out-up");
+            target.classList.remove("reveal--out-down");
+          } else {
+            target.classList.add("reveal--out-down");
+            target.classList.remove("reveal--out-up");
+          }
         });
       },
       { threshold: 0.16, rootMargin: "0px 0px -8% 0px" },
     );
 
     revealItems.forEach((item) => {
-      item.classList.remove("reveal--in");
+      item.classList.remove("reveal--in", "reveal--out-up", "reveal--out-down");
       observer.observe(item);
     });
 
