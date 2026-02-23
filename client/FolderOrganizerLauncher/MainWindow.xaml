@@ -5,7 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="Folder Organizer Launcher" Height="450" Width="800"
-        Background="#1E1E1E" Foreground="White">
+        WindowStartupLocation="CenterScreen"
+        Background="#1E1E1E" Foreground="White"
+        Loaded="Window_Loaded">
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
