@@ -16,6 +16,31 @@ namespace FolderOrganizerLauncher
             InitializeComponent();
         }
 
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // US-8.1 Controllo versione all'avvio
+                var updateResult = await UpdateService.CheckForUpdatesAsync();
+                
+                if (updateResult != null && updateResult.IsUpdateAvailable)
+                {
+                    // US-8.2 Notifica aggiornamento disponibile
+                    UpdateDialog updateDialog = new UpdateDialog(updateResult)
+                    {
+                        Owner = this
+                    };
+                    
+                    updateDialog.ShowDialog();
+                }
+            }
+            catch (Exception ex)
+            {
+                // Silently ignore errors (offline) to not block the app
+                Debug.WriteLine($"Error showing update dialog: {ex.Message}");
+            }
+        }
+
         private void DropZone_DragOver(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
