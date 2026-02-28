@@ -5,13 +5,21 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Abilita CORS per permettere richieste dal client (se necessario)
-app.use(cors());
-app.use(express.json());
+// L'app aggiornata
+const appVersion = "0.0.9";
+
+// Funzione per generare il link GitHub in base alla versione
+function getGitHubDownloadUrl(version) {
+    // Trasforma "0.0.9" in "0-0-9"
+    const formattedVersion = version.replace(/\./g, '-');
+    return `https://github.com/T3ox/FolderOrganizer/releases/download/Release/FolderOrganizer_v${formattedVersion}.zip`;
+}
 
 // Simulazione di una riga del database contenente la versione attuale e il link per il download
 let appInfo = {
-    version: "1.0.0",
-    downloadUrl: "https://esempio.com/download/app_v1.0.0.zip"
+    version: appVersion,
+    downloadUrl: getGitHubDownloadUrl(appVersion),
+    checksum: "" // Checksum vuoto fa saltare la validazione al client
 };
 
 // Endpoint GET per recuperare la versione attuale
