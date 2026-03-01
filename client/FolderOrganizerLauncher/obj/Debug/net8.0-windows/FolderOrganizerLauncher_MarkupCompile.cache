@@ -10,11 +10,11 @@ none
 false
 TRACE;DEBUG;NET;NET8_0;NETCOREAPP;WINDOWS;WINDOWS7_0;NET5_0_OR_GREATER;NET6_0_OR_GREATER;NET7_0_OR_GREATER;NET8_0_OR_GREATER;NETCOREAPP3_0_OR_GREATER;NETCOREAPP3_1_OR_GREATER;WINDOWS7_0_OR_GREATER
 C:\Users\User\Documents\GitHub\FolderOrganizer\client\FolderOrganizerLauncher\App.xaml
-2-891832546
+32017421328
 
-61030707335
-1982036908853
-MainWindow.xaml;UpdateDialog.xaml;
+12739048133
+199-1454683102
+Features\Updates\Views\UpdateWindow.xaml;MainWindow.xaml;UpdateDialog.xaml;
 
 False
 

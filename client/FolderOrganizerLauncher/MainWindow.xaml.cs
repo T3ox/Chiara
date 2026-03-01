@@ -1,9 +1,13 @@
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using FolderOrganizerLauncher.Features.Updates.Services;
+using FolderOrganizerLauncher.Features.Updates.ViewModels;
+using FolderOrganizerLauncher.Features.Updates.Views;
 
 namespace FolderOrganizerLauncher
 {
@@ -21,17 +25,19 @@ namespace FolderOrganizerLauncher
             try
             {
                 // US-8.1 Controllo versione all'avvio
-                var updateResult = await UpdateService.CheckForUpdatesAsync();
+                IUpdateService updateService = new FolderOrganizerLauncher.Features.Updates.Services.UpdateService();
+                var updateResult = await updateService.CheckForUpdatesAsync();
                 
                 if (updateResult != null && updateResult.IsUpdateAvailable)
                 {
                     // US-8.2 Notifica aggiornamento disponibile
-                    UpdateDialog updateDialog = new UpdateDialog(updateResult)
+                    var viewModel = new UpdateViewModel(updateResult);
+                    var updateWindow = new UpdateWindow(viewModel)
                     {
                         Owner = this
                     };
                     
-                    updateDialog.ShowDialog();
+                    updateWindow.ShowDialog();
                 }
             }
             catch (Exception ex)

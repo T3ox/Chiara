@@ -2,42 +2,23 @@ using System;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using FolderOrganizerLauncher.Features.Updates.Models;
 
-namespace FolderOrganizerLauncher
+namespace FolderOrganizerLauncher.Features.Updates.Services
 {
-    public class BackendVersionInfo
-    {
-        [JsonPropertyName("version")]
-        public string? Version { get; set; }
-
-        [JsonPropertyName("downloadUrl")]
-        public string? DownloadUrl { get; set; }
-    }
-
-    public class UpdateCheckResult
-    {
-        public bool IsUpdateAvailable { get; set; }
-        public string CurrentVersion { get; set; } = string.Empty;
-        public string LatestVersion { get; set; } = string.Empty;
-        public string DownloadUrl { get; set; } = string.Empty;
-    }
-
-    public static class UpdateService
+    public class UpdateService : IUpdateService
     {
         private static readonly HttpClient _httpClient = new HttpClient();
         private const string BackendUrl = "http://localhost:3000/api/version";
         
         // Simulating the current version of the application. 
-        // In a real scenario this might come from Assembly.GetExecutingAssembly().GetName().Version
         public const string CurrentAppVersion = "0.9.0"; 
 
-        public static async Task<UpdateCheckResult?> CheckForUpdatesAsync()
+        public async Task<UpdateCheckResult?> CheckForUpdatesAsync()
         {
             try
             {
-                // Set a timeout so we don't hang if the server is down
                 _httpClient.Timeout = TimeSpan.FromSeconds(5);
                 
                 HttpResponseMessage response = await _httpClient.GetAsync(BackendUrl);
@@ -69,14 +50,13 @@ namespace FolderOrganizerLauncher
             }
             catch (Exception ex)
             {
-                // Fail silently (offline mode) as specified in US-8.1
-                Debug.WriteLine($"Update check failed (silently ignored): {ex.Message}");
+                Debug.WriteLine($"Update check failed: {ex.Message}");
             }
             
-            return null; // Return null if check fails or server offline
+            return null;
         }
         
-        private static bool IsVersionGreater(string latestVersion, string currentVersion)
+        private bool IsVersionGreater(string latestVersion, string currentVersion)
         {
             try
             {
@@ -88,7 +68,6 @@ namespace FolderOrganizerLauncher
             }
             catch
             {
-                // Fallback basic check if semantic version parsing fails
                 return latestVersion != currentVersion;
             }
             return false;

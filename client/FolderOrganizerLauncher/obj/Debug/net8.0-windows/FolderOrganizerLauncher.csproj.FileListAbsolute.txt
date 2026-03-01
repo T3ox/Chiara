@@ -20,3 +20,9 @@ C:\Users\User\Documents\GitHub\FolderOrganizer\client\FolderOrganizerLauncher\ob
 C:\Users\User\Documents\GitHub\FolderOrganizer\client\FolderOrganizerLauncher\obj\Debug\net8.0-windows\ref\FolderOrganizerLauncher.dll
 C:\Users\User\Documents\GitHub\FolderOrganizer\client\FolderOrganizerLauncher\obj\Debug\net8.0-windows\UpdateDialog.baml
 C:\Users\User\Documents\GitHub\FolderOrganizer\client\FolderOrganizerLauncher\obj\Debug\net8.0-windows\UpdateDialog.g.cs
+C:\Users\User\Documents\GitHub\FolderOrganizer\client\FolderOrganizerLauncher\obj\Debug\net8.0-windows\FolderOrganizerLauncher.csproj.AssemblyReference.cache
+C:\Users\User\Documents\GitHub\FolderOrganizer\client\FolderOrganizerLauncher\obj\Debug\net8.0-windows\Features\Updates\Views\UpdateWindow.g.cs
+C:\Users\User\Documents\GitHub\FolderOrganizer\client\FolderOrganizerLauncher\obj\Debug\net8.0-windows\FolderOrganizerLauncher_MarkupCompile.lref
+C:\Users\User\Documents\GitHub\FolderOrganizer\client\FolderOrganizerLauncher\bin\Debug\net8.0-windows\CommunityToolkit.Mvvm.dll
+C:\Users\User\Documents\GitHub\FolderOrganizer\client\FolderOrganizerLauncher\obj\Debug\net8.0-windows\Features\Updates\Views\UpdateWindow.baml
+C:\Users\User\Documents\GitHub\FolderOrganizer\client\FolderOrganizerLauncher\obj\Debug\net8.0-windows\FolderOr.AF748ECE.Up2Date
