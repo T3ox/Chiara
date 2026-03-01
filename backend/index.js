@@ -11,7 +11,7 @@ app.use(express.json());
 // Simulazione di una riga del database contenente la versione attuale e il link per il download
 let appInfo = {
     version: "1.0.0",
-    downloadUrl: "https://esempio.com/download/app_v1.0.0.zip",
+    downloadUrl: "https://github.com/T3ox/Chiara/releases/download/Release/FolderOrganizer_v0-0-9.zip",
     checksum: "" // Checksum vuoto fa saltare la validazione al client
 };
 
