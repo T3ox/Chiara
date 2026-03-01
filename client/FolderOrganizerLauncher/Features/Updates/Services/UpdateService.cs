@@ -56,6 +56,35 @@ namespace FolderOrganizerLauncher.Features.Updates.Services
             return null;
         }
         
+        public async Task DownloadFileAsync(string url, string destinationPath, IProgress<double> progress, System.Threading.CancellationToken ct)
+        {
+            using (var response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct))
+            {
+                response.EnsureSuccessStatusCode();
+
+                var totalBytes = response.Content.Headers.ContentLength;
+
+                using (var contentStream = await response.Content.ReadAsStreamAsync(ct))
+                using (var fileStream = new System.IO.FileStream(destinationPath, System.IO.FileMode.Create, System.IO.FileAccess.Write, System.IO.FileShare.None, 8192, true))
+                {
+                    var buffer = new byte[8192];
+                    long totalReadBytes = 0;
+                    int readBytes;
+
+                    while ((readBytes = await contentStream.ReadAsync(buffer, 0, buffer.Length, ct)) > 0)
+                    {
+                        await fileStream.WriteAsync(buffer, 0, readBytes, ct);
+                        totalReadBytes += readBytes;
+
+                        if (totalBytes.HasValue)
+                        {
+                            progress.Report((double)totalReadBytes / totalBytes.Value * 100);
+                        }
+                    }
+                }
+            }
+        }
+
         private bool IsVersionGreater(string latestVersion, string currentVersion)
         {
             try

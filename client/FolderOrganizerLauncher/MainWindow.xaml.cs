@@ -31,7 +31,7 @@ namespace FolderOrganizerLauncher
                 if (updateResult != null && updateResult.IsUpdateAvailable)
                 {
                     // US-8.2 Notifica aggiornamento disponibile
-                    var viewModel = new UpdateViewModel(updateResult);
+                    var viewModel = new UpdateViewModel(updateResult, updateService);
                     var updateWindow = new UpdateWindow(viewModel)
                     {
                         Owner = this
