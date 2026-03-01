@@ -9,8 +9,15 @@ namespace FolderOrganizerLauncher.Features.Updates.Services
 {
     public class UpdateService : IUpdateService
     {
-        private static readonly HttpClient _httpClient = new HttpClient();
+        private static readonly HttpClient _httpClient = CreateHttpClient();
         private const string BackendUrl = "http://localhost:3000/api/version";
+        
+        private static HttpClient CreateHttpClient()
+        {
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("User-Agent", "FolderOrganizerLauncher");
+            return client;
+        }
         
         // Simulating the current version of the application. 
         public const string CurrentAppVersion = "0.9.0"; 
