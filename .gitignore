@@ -10,4 +10,5 @@ publish/
 
 # Node.js
 node_modules
-﻿.env
+site/node_modules
+.env
