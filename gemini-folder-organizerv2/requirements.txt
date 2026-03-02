@@ -1,0 +1,6 @@
+google-generativeai
+python-docx
+openpyxl
+pymupdf
+pillow
+python-dotenv
