@@ -1,1 +1,13 @@
+﻿# Build
+client/FolderOrganizerLauncher/bin/
+client/FolderOrganizerLauncher/obj
+
+# Visual Studio
+.vs/
+
+# Publish output
+publish/
+
+# Node.js
+node_modules
 ﻿.env
