@@ -20,7 +20,7 @@ namespace FolderOrganizerLauncher.Features.Updates.Services
         }
         
         // Simulating the current version of the application. 
-        public const string CurrentAppVersion = "0.9.0"; 
+        public const string CurrentAppVersion = "0.1.0"; 
 
         public async Task<UpdateCheckResult?> CheckForUpdatesAsync()
         {
