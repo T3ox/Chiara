@@ -10,9 +10,10 @@ app.use(express.json());
 
 // Simulazione di una riga del database contenente la versione attuale e il link per il download
 let appInfo = {
-    version: "1.0.0",
+    version: "0.0.1",
     downloadUrl: "https://github.com/T3ox/Chiara/releases/download/Release/FolderOrganizer_v0-0-9.zip",
-    checksum: "" // Checksum vuoto fa saltare la validazione al client
+    checksum: "", // Checksum vuoto fa saltare la validazione al client
+    releaseNotes: "- Aggiunta la funzione di check updates.\n- Miglioramenti vari alla UI tra cui una nuova modale per riassumere le novità."
 };
 
 // Endpoint GET per recuperare la versione attuale

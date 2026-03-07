@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chiara Launcher</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <div class="window">
+    <h1 class="title">Chiara Launcher</h1>
+
+    <div id="dropzone" class="dropzone">
+      <div>
+        <div class="icon">📂</div>
+        <div class="hint">Trascinare qui la cartella</div>
+        <div id="selectedPath" class="selectedPath">Nessuna cartella selezionata</div>
+      </div>
+    </div>
+
+    <div id="status" class="status"></div>
+
+    <div class="actions">
+      <button id="confirmBtn" class="btn" disabled>Conferma Selezione</button>
+
+      <!-- alternativa web per "scegli cartella" -->
+      <label class="btn-secondary">
+        Seleziona cartella…
+        <input id="folderPicker" type="file" webkitdirectory multiple hidden />
+      </label>
+    </div>
+
+    <!-- Update Modal -->
+    <div id="updateModal" class="modal hidden">
+      <div class="modal-content">
+        <h2 id="updateModalTitle">Aggiornamento Disponibile</h2>
+        <div class="version-info">
+          <p id="updateModalCurrentVersion"></p>
+          <p id="updateModalNewVersion"></p>
+        </div>
+        <textarea id="updateModalNotes" readonly class="release-notes"></textarea>
+        <div class="modal-actions">
+          <button id="updateModalIgnoreBtn" class="btn btn-secondary">Ignora</button>
+          <button id="updateModalUpdateBtn" class="btn">Aggiorna</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+
+</html>
