@@ -1,16 +1,18 @@
 {
   "name": "electronlauncher",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "main": "index.js",
   "scripts": {
     "start": "electron .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "electron-builder --win nsis zip"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "devDependencies": {
-    "electron": "^40.7.0"
+    "electron": "^40.7.0",
+    "electron-builder": "^26.8.1"
   }
 }
