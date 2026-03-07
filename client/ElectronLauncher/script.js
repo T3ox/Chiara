@@ -60,6 +60,11 @@ const dropzone = document.getElementById('dropzone');
       setSelection(e.target.files);
     });
 
+    // Cliccare sulla dropzone per aprire il selettore file
+    dropzone.addEventListener('click', () => {
+      folderPicker.click();
+    });
+
     confirmBtn.addEventListener('click', () => {
       if (selectedFiles.length === 0) return;
       setStatus(`Confermato (${selectedFiles.length} file). Qui chiameresti la tua logica.`);
