@@ -73,7 +73,9 @@ confirmBtn.addEventListener('click', () => {
 });
 
 // --- Update Checker Logic --- //
-const currentVersion = "0.0.1";
+const currentVersion = "0.0.0";
+const versionLabel = document.getElementById('versionLabel');
+versionLabel.textContent = `Version: ${currentVersion}`;
 const updateModal = document.getElementById('updateModal');
 const updateModalCurrentVersion = document.getElementById('updateModalCurrentVersion');
 const updateModalNewVersion = document.getElementById('updateModalNewVersion');
@@ -108,14 +110,48 @@ updateModalIgnoreBtn.addEventListener('click', () => {
   updateModal.classList.add('hidden');
 });
 
-updateModalUpdateBtn.addEventListener('click', () => {
-  if (downloadUrlToOpen) {
-    // Try to open external link using standard API.
-    // In a real electron app you would use IPC to call shell.openExternal
-    window.open(downloadUrlToOpen, '_blank');
-  }
-  updateModal.classList.add('hidden');
-});
+    updateModalUpdateBtn.addEventListener('click', () => {
+      if (downloadUrlToOpen) {
+        if (window.electronAPI && window.electronAPI.downloadUpdate) {
+            // Disable buttons and update text
+            updateModalUpdateBtn.disabled = true;
+            updateModalIgnoreBtn.disabled = true;
+            updateModalUpdateBtn.textContent = 'Scaricamento in corso...';
+            
+            // Send IPC message to start download
+            window.electronAPI.downloadUpdate(downloadUrlToOpen);
+        } else {
+            // Fallback for browsers
+            window.open(downloadUrlToOpen, '_blank');
+            updateModal.classList.add('hidden');
+        }
+      } else {
+        updateModal.classList.add('hidden');
+      }
+    });
 
-// Run check on load
-window.addEventListener('DOMContentLoaded', checkForUpdates);
+    // Listen for download status updates
+    if (window.electronAPI && window.electronAPI.onDownloadStatus) {
+        window.electronAPI.onDownloadStatus((status, message) => {
+            if (status === 'done') {
+                updateModalUpdateBtn.textContent = 'Scaricato! Estrarre il file.';
+                setTimeout(() => {
+                    updateModal.classList.add('hidden');
+                    // Reset modal for future use
+                    updateModalUpdateBtn.disabled = false;
+                    updateModalIgnoreBtn.disabled = false;
+                    updateModalUpdateBtn.textContent = 'Aggiorna';
+                }, 3000);
+            } else if (status === 'error') {
+                console.error(message);
+                updateModalUpdateBtn.textContent = 'Errore Download';
+                updateModalUpdateBtn.disabled = false;
+                updateModalIgnoreBtn.disabled = false;
+            } else {
+                updateModalUpdateBtn.textContent = message; // status: 'start' or 'progress'
+            }
+        });
+    }
+
+    // Run check on load
+    window.addEventListener('DOMContentLoaded', checkForUpdates);

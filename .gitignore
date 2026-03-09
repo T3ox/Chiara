@@ -1,6 +1,7 @@
 ﻿# Build
 client/FolderOrganizerLauncher/bin/
 client/FolderOrganizerLauncher/obj
+client/ElectronLauncher/dist
 
 # Visual Studio
 .vs/
