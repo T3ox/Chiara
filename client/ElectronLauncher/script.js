@@ -73,7 +73,7 @@ confirmBtn.addEventListener('click', () => {
 });
 
 // --- Update Checker Logic --- //
-const currentVersion = "0.0.0";
+const currentVersion = "0.0.1";
 const updateModal = document.getElementById('updateModal');
 const updateModalCurrentVersion = document.getElementById('updateModalCurrentVersion');
 const updateModalNewVersion = document.getElementById('updateModalNewVersion');
