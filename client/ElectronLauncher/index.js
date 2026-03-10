@@ -49,16 +49,24 @@ app.whenReady().then(() => {
             try {
               const extractPath = path.join(tempPath, 'update_extracted_' + Date.now());
               fs.mkdirSync(extractPath, { recursive: true });
-                            
-              // Su macOS, fare 'unzip' nativo è spesso più sicuro per i bundle .app per preservare i symlinks e i permessi
+              console.log(`[Update] Extracting to ${extractPath}`);
+              
               const { execSync } = require('child_process');
               try {
-                  execSync(`unzip -q -o "${destination}" -d "${extractPath}"`);
-              } catch (unzipErr) {
-                  console.error(`[Update] Native unzip failed: ${unzipErr.message}`);
-                  throw unzipErr;
+                  if (process.platform === 'win32') {
+                      // Usiamo PowerShell su Windows per l'estrazione nativa (manca unzip di default)
+                      execSync(`powershell -Command "Expand-Archive -Path '${destination}' -DestinationPath '${extractPath}' -Force"`);
+                  } else {
+                      // Su macOS usiamo unzip nativo
+                      execSync(`unzip -q -o "${destination}" -d "${extractPath}"`);
+                  }
+              } catch (extractErr) {
+                  console.error(`[Update] Extraction failed: ${extractErr.message}`);
+                  throw extractErr;
               }
-                            
+              
+              console.log('[Update] Extraction complete');
+              
               const files = fs.readdirSync(extractPath);
               let newAppPath = null;
               
@@ -69,44 +77,45 @@ app.whenReady().then(() => {
                 }
               }
 
+              console.log(`[Update] Found executable: ${newAppPath}`);
+
               if (newAppPath) {
                 event.sender.send('download-status', 'done', 'Sostituzione in corso... Riavvio imminente.');
                 
-                // SEAMLESS UPDATE LOGIC
                 const currentExe = process.execPath;
                 const isMacApp = process.platform === 'darwin' && currentExe.includes('.app/Contents/MacOS/');
                 
                 if (isMacApp && app.isPackaged) {
-                  const currentAppPath = currentExe.substring(0, currentExe.indexOf('.app') + 4);
-                  try {
-                    const { execSync } = require('child_process');
-                    execSync(`rm -rf "${currentAppPath}" && mv "${newAppPath}" "${currentAppPath}"`);
-                    
-                    app.quit();
-                    app.relaunch();
-                  } catch (copyErr) {
-                    console.error(`[Update] Errore di permessi/copia: ${copyErr.message}`, copyErr);
-                    event.sender.send('download-status', 'error', `Impossibile sovrascrivere l'app (permessi negati). Aperta cartella per aggiornamento manuale. Dettagli: ${copyErr.message}`);
-                    // Fallback: Apri l'app appena estratta se non abbiamo i permessi per sovrascrivere
-                    shell.openPath(newAppPath).then(() => {
-                      setTimeout(() => app.quit(), 1000);
-                    });
-                  }
+                   const currentAppPath = currentExe.substring(0, currentExe.indexOf('.app') + 4);
+                   try {
+                     const { execSync } = require('child_process');
+                     execSync(`rm -rf "${currentAppPath}" && mv "${newAppPath}" "${currentAppPath}"`);
+                     app.quit();
+                     app.relaunch();
+                   } catch (copyErr) {
+                      console.error(`[Update] Errore di permessi/copia: ${copyErr.message}`, copyErr);
+                      event.sender.send('download-status', 'error', `Impossibile sovrascrivere l'app (permessi negati).`);
+                      shell.openPath(newAppPath).then(() => setTimeout(() => app.quit(), 1000));
+                   }
+                } else if (process.platform === 'win32' && newAppPath.endsWith('.exe')) {
+                   // SEAMLESS WINDOWS: Esegui installer con flag silente /S
+                   const { exec } = require('child_process');
+                   exec(`"${newAppPath}" /S`, (err) => {
+                     if (err) {
+                        console.error(`[Update] Errore avvio installer silenzioso: ${err.message}`);
+                        shell.openPath(newAppPath);
+                     }
+                     setTimeout(() => app.quit(), 1000);
+                   });
                 } else {
-                  // Windows or unpacked environment: just launch the extracted file
-                  shell.openPath(newAppPath).then(() => {
-                    setTimeout(() => app.quit(), 1000);
-                  });
+                   shell.openPath(newAppPath).then(() => setTimeout(() => app.quit(), 1000));
                 }
               } else {
-                console.warn('[Update] No executable found in extracted zip.');
-                shell.showItemInFolder(extractPath);
-                event.sender.send('download-status', 'error', 'Nessuna applicazione (.app o .exe) trovata nello zip estratto.');
+                 event.sender.send('download-status', 'error', 'Nessuna applicazione trovata nello zip.');
               }
             } catch (err) {
-              console.error(`[Update] Errore durante l'estrazione: ${err.message}`, err);
-              event.sender.send('download-status', 'error', `Errore durante l'estrazione: ${err.message}`);
-              shell.showItemInFolder(destination); 
+               console.error(`[Update] Errore generale: ${err.message}`, err);
+               event.sender.send('download-status', 'error', `Errore: ${err.message}`);
             }
           });
         });

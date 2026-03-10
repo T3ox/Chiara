@@ -87,7 +87,8 @@ let downloadUrlToOpen = null;
 
 async function checkForUpdates() {
   try {
-    const response = await fetch('http://localhost:3000/api/version');
+    const platform = window.electronAPI.getPlatform ? window.electronAPI.getPlatform() : 'win32';
+    const response = await fetch(`http://localhost:3000/api/version?platform=${platform}`);
     if (!response.ok) return;
 
     const data = await response.json();

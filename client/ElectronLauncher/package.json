@@ -15,7 +15,10 @@
   "description": "Launcher per FolderOrganizer",
   "build": {
     "appId": "com.t3ox.folderorganizerlauncher",
-    "productName": "FolderOrganizer Launcher"
+    "productName": "FolderOrganizer Launcher",
+    "win": {
+      "target": ["nsis", "zip"]
+    }
   },
   "devDependencies": {
     "electron": "^40.7.0",
