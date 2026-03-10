@@ -5,7 +5,7 @@ export default function PrivacyPage() {
     <>
       <section className="section shell">
         <h1>Privacy</h1>
-        <p className="lead">Versione iniziale dell'informativa. Sara aggiornata con il testo legale definitivo.</p>
+        <p className="lead">Versione iniziale dell'informativa. Sarà aggiornata con il testo legale definitivo.</p>
       </section>
 
       <section className="section shell">
@@ -13,9 +13,9 @@ export default function PrivacyPage() {
           <article className="card">
             <h2>Principi operativi</h2>
             <ul className="clean-list">
-              <li>Raccolta dati limitata alle finalita dichiarate.</li>
+              <li>Raccolta dati limitata alle finalità dichiarate.</li>
               <li>Trattamento orientato a sicurezza e minimizzazione.</li>
-              <li>Gestione accessi coerente con ruoli e responsabilita.</li>
+              <li>Gestione accessi coerente con ruoli e responsabilità.</li>
               <li>Conservazione dati solo per il tempo necessario.</li>
             </ul>
           </article>
