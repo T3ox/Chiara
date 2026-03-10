@@ -3,6 +3,7 @@ import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import SiteLayout from "./components/SiteLayout";
 import HomePage from "./pages/HomePage";
 import PricingPage from "./pages/PricingPage";
+import DemoPage from "./pages/DemoPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import LoginPage from "./pages/LoginPage";
 import TermsPage from "./pages/TermsPage";
@@ -64,12 +65,13 @@ export default function App() {
 
   return (
     <Routes>
-      <Route element={<SiteLayout />}>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/prezzi" element={<PricingPage />} />
-        <Route path="/privacy" element={<PrivacyPage />} />
-        <Route path="/accedi" element={<LoginPage />} />
-        <Route path="/termini" element={<TermsPage />} />
+        <Route element={<SiteLayout />}>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/prezzi" element={<PricingPage />} />
+          <Route path="/demo" element={<DemoPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/accedi" element={<LoginPage />} />
+          <Route path="/termini" element={<TermsPage />} />
         <Route path="/account/*" element={<LoginPage fromAccountPath />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
