@@ -32,13 +32,14 @@
 
   const typeIcon = (type) => {
     const map = {
-      Image: "🖼️",
-      PDF: "📕",
-      Word: "📘",
-      Excel: "📗",
-      Outlook: "📧"
+      Image: "file-image.svg",
+      PDF: "file-pdf.svg",
+      Word: "file-word.svg",
+      Excel: "file-excel.svg",
+      Outlook: "file-outlook.svg"
     };
-    return map[type] || "📄";
+    const icon = map[type] || "file-generic.svg";
+    return `<img class="file-icon" src="../img/file-icons/${icon}" alt="" loading="lazy" decoding="async" />`;
   };
 
   const formatDate = (iso) => {

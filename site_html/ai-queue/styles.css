@@ -213,6 +213,13 @@ body {
   min-width: 220px;
 }
 
+.file-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex: 0 0 18px;
+}
+
 .file-name {
   max-width: 220px;
   overflow: hidden;

@@ -3,7 +3,7 @@
     <>
       <section className="section shell">
         <h1>Termini</h1>
-        <p className="lead">Versione preliminare dei termini di servizio. Il testo contrattuale definitivo sara pubblicato in aggiornamento successivo.</p>
+        <p className="lead">Versione preliminare dei termini di servizio. Il testo contrattuale definitivo sarà pubblicato in aggiornamento successivo.</p>
       </section>
 
       <section className="section shell">
@@ -11,8 +11,8 @@
           <article className="card">
             <h2>Uso del servizio</h2>
             <ul className="clean-list">
-              <li>Utilizzo consentito per finalita professionali e operative.</li>
-              <li>Responsabilita utente su qualita e legittimita dei dati inseriti.</li>
+              <li>Utilizzo consentito per finalità professionali e operative.</li>
+              <li>Responsabilità utente su qualità e legittimità dei dati inseriti.</li>
               <li>Uso conforme alle policy interne dell'organizzazione.</li>
             </ul>
           </article>
