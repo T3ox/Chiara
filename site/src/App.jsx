@@ -15,6 +15,13 @@ function useRevealOnScroll() {
     const revealItems = Array.from(document.querySelectorAll(".reveal, .reveal-on-scroll"));
     if (!revealItems.length) return;
 
+    document.querySelectorAll("[data-reveal-seq]").forEach((container) => {
+      const items = Array.from(container.querySelectorAll(".reveal, .reveal-on-scroll"));
+      items.forEach((item, index) => {
+        item.style.transitionDelay = `${Math.min(index * 80, 320)}ms`;
+      });
+    });
+
     if (reducedMotion || !("IntersectionObserver" in window)) {
       revealItems.forEach((item) => item.classList.add("reveal--in"));
       return;
