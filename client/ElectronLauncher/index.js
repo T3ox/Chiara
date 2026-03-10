@@ -5,8 +5,8 @@ const https = require('https');
 
 const createWindow = () => {
   const win = new BrowserWindow({
-    height: 450,
     width: 800,
+    height: 550,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js')
     }
@@ -17,18 +17,14 @@ const createWindow = () => {
 }
 
 app.whenReady().then(() => {
-  // Creazione della finestra principale
   createWindow();
 
-  // Gestione del comportamento dell'update su macOS
   ipcMain.on('download-update', (event, urlToDownload) => {
-    // Creazione puntamento verso cartella temp per download e estrazione dell'update
     const tempPath = app.getPath('temp');
     const fileName = 'update_' + Date.now() + '.zip';
     const destination = path.join(tempPath, fileName);
     const fileStream = fs.createWriteStream(destination);
     
-    // Notifica all'interfaccia che il download è iniziato
     event.sender.send('download-status', 'start', 'Inizio download in corso...');
     
     const downloadFile = (url) => {
@@ -44,7 +40,6 @@ app.whenReady().then(() => {
           return;
         }
 
-        // scrittura nella cartella temp
         response.pipe(fileStream);
 
         fileStream.on('finish', () => {
@@ -52,7 +47,6 @@ app.whenReady().then(() => {
             event.sender.send('download-status', 'extract', 'Download completato! Installazione in corso...');
             
             try {
-              // Creazione cartella temporanea per estrazione
               const extractPath = path.join(tempPath, 'update_extracted_' + Date.now());
               fs.mkdirSync(extractPath, { recursive: true });
                             
@@ -65,7 +59,6 @@ app.whenReady().then(() => {
                   throw unzipErr;
               }
                             
-              // Cerca il file estratto .app or .exe
               const files = fs.readdirSync(extractPath);
               let newAppPath = null;
               
@@ -80,20 +73,15 @@ app.whenReady().then(() => {
                 event.sender.send('download-status', 'done', 'Sostituzione in corso... Riavvio imminente.');
                 
                 // SEAMLESS UPDATE LOGIC
-                // Controlla se è in esecuzione un'app Mac (di solito termina con .app/Contents/MacOS/Executable)
                 const currentExe = process.execPath;
                 const isMacApp = process.platform === 'darwin' && currentExe.includes('.app/Contents/MacOS/');
                 
                 if (isMacApp && app.isPackaged) {
-                  // Trova il percorso della root (.app) dell'applicazione attualmente in esecuzione
                   const currentAppPath = currentExe.substring(0, currentExe.indexOf('.app') + 4);
-                  // Sposta la vecchia app nel cestino
                   try {
-                    // Sposta la nuova app alla location dell'app attuale (sovrascrivendo)
                     const { execSync } = require('child_process');
                     execSync(`rm -rf "${currentAppPath}" && mv "${newAppPath}" "${currentAppPath}"`);
                     
-                    // Lancia l'app aggiornata dal suo path originale
                     app.quit();
                     app.relaunch();
                   } catch (copyErr) {
