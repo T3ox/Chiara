@@ -3,16 +3,16 @@ import Accordion from "../components/Accordion";
 
 const faqItems = [
   {
-    title: "Perche non vedo un prezzo fisso?",
+    title: "Perché non vedo un prezzo fisso?",
     content: "Il valore dipende da perimetro operativo, volume e livello di standardizzazione richiesto.",
   },
   {
-    title: "E possibile partire con un progetto pilota?",
-    content: "Si, l'avvio consigliato e su un caso concreto con estensione progressiva.",
+    title: "È possibile partire con un progetto pilota?",
+    content: "Sì, l'avvio consigliato è su un caso concreto con estensione progressiva.",
   },
   {
     title: "Sono previsti costi nascosti?",
-    content: "No, la proposta definisce chiaramente perimetro, milestone e responsabilita.",
+    content: "No, la proposta definisce chiaramente perimetro, milestone e responsabilità.",
   },
 ];
 
@@ -22,7 +22,7 @@ export default function PricingPage() {
       <section className="section shell pricing-hero">
         <h1>Prezzi</h1>
         <p className="lead">
-          Proposta su richiesta, costruita sui tuoi processi reali. Niente listini standard che ignorano complessita operative.
+          Proposta su richiesta, costruita sui tuoi processi reali. Niente listini standard che ignorano complessità operative.
         </p>
       </section>
 
@@ -47,8 +47,8 @@ export default function PricingPage() {
             <p className="price">Su richiesta<span> / rollout esteso</span></p>
             <ul className="clean-list">
               <li>Governance cross-funzione e standard condivisi</li>
-              <li>Linee guida qualita e controllo compliance interno</li>
-              <li>Roadmap per adozione progressiva su piu unita</li>
+              <li>Linee guida qualità e controllo compliance interno</li>
+              <li>Roadmap per adozione progressiva su più unità</li>
               <li>Allineamento stakeholder operativi e manageriali</li>
             </ul>
             <Link className="btn btn-outline" to="/privacy">Verifica requisiti privacy</Link>
@@ -64,8 +64,8 @@ export default function PricingPage() {
       <section className="section shell">
         <div className="callout">
           <div>
-            <h2>Hai gia un obiettivo di rollout?</h2>
-            <p>Condividi priorita e vincoli, prepariamo un percorso operativo sostenibile.</p>
+            <h2>Hai già un obiettivo di rollout?</h2>
+            <p>Condividi priorità e vincoli, prepariamo un percorso operativo sostenibile.</p>
           </div>
           <div className="hero-actions">
             <Link className="btn btn-solid" to="/accedi">Parla con noi</Link>
