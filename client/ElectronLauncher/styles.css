@@ -204,3 +204,35 @@ body{
   gap: 12px;
   margin-top: 8px;
 }
+
+/* Progress Bar Styles */
+.progress-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.progress-container.hidden {
+  display: none;
+}
+
+.progress-text {
+  color: var(--muted1);
+  font-size: 13px !important;
+  text-align: center;
+}
+
+.progress-bar-bg {
+  background: var(--bg);
+  height: 10px;
+  border-radius: 5px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.progress-bar-fill {
+  background: var(--primary);
+  height: 100%;
+  width: 0%;
+  transition: width 0.1s linear;
+}

@@ -111,48 +111,75 @@ updateModalIgnoreBtn.addEventListener('click', () => {
   updateModal.classList.add('hidden');
 });
 
-    updateModalUpdateBtn.addEventListener('click', () => {
-      if (downloadUrlToOpen) {
-        if (window.electronAPI && window.electronAPI.downloadUpdate) {
-            // Disable buttons and update text
-            updateModalUpdateBtn.disabled = true;
-            updateModalIgnoreBtn.disabled = true;
-            updateModalUpdateBtn.textContent = 'Scaricamento in corso...';
-            
-            // Send IPC message to start download
-            window.electronAPI.downloadUpdate(downloadUrlToOpen);
-        } else {
-            // Fallback for browsers
-            window.open(downloadUrlToOpen, '_blank');
-            updateModal.classList.add('hidden');
-        }
-      } else {
+const updateProgressContainer = document.getElementById('updateProgressContainer');
+const updateProgressBar = document.getElementById('updateProgressBar');
+const updateProgressText = document.getElementById('updateProgressText');
+
+function resetUpdateModal() {
+  updateModalUpdateBtn.disabled = false;
+  updateModalIgnoreBtn.disabled = false;
+  updateModalUpdateBtn.textContent = 'Aggiorna';
+  updateProgressContainer.classList.add('hidden');
+  updateProgressBar.style.width = '0%';
+  updateProgressText.textContent = 'Download: 0%';
+}
+
+updateModalUpdateBtn.addEventListener('click', () => {
+  if (downloadUrlToOpen) {
+    if (window.electronAPI && window.electronAPI.downloadUpdate) {
+        updateModalUpdateBtn.disabled = true;
+        updateModalIgnoreBtn.disabled = true;
+        updateModalUpdateBtn.textContent = 'Scaricamento in corso...';
+        // Show the progress bar
+        updateProgressContainer.classList.remove('hidden');
+        updateProgressBar.style.width = '0%';
+        updateProgressText.textContent = 'Download: 0%';
+        
+        window.electronAPI.downloadUpdate(downloadUrlToOpen);
+    } else {
+        window.open(downloadUrlToOpen, '_blank');
         updateModal.classList.add('hidden');
-      }
-    });
-
-    // Listen for download status updates
-    if (window.electronAPI && window.electronAPI.onDownloadStatus) {
-        window.electronAPI.onDownloadStatus((status, message) => {
-            if (status === 'done') {
-                updateModalUpdateBtn.textContent = 'Scaricato! Estrarre il file.';
-                setTimeout(() => {
-                    updateModal.classList.add('hidden');
-                    // Reset modal for future use
-                    updateModalUpdateBtn.disabled = false;
-                    updateModalIgnoreBtn.disabled = false;
-                    updateModalUpdateBtn.textContent = 'Aggiorna';
-                }, 3000);
-            } else if (status === 'error') {
-                console.error(message);
-                updateModalUpdateBtn.textContent = 'Errore Download';
-                updateModalUpdateBtn.disabled = false;
-                updateModalIgnoreBtn.disabled = false;
-            } else {
-                updateModalUpdateBtn.textContent = message; // status: 'start' or 'progress'
-            }
-        });
     }
+  } else {
+    updateModal.classList.add('hidden');
+  }
+});
 
-    // Run check on load
-    window.addEventListener('DOMContentLoaded', checkForUpdates);
+// Listen for download progress
+if (window.electronAPI && window.electronAPI.onDownloadProgress) {
+  window.electronAPI.onDownloadProgress((percentage) => {
+    updateProgressBar.style.width = `${percentage}%`;
+    updateProgressText.textContent = `Download: ${percentage}%`;
+    if (percentage >= 100) {
+      updateProgressText.textContent = 'Download completato! Estrazione in corso...';
+    }
+  });
+}
+
+// Listen for download status updates
+if (window.electronAPI && window.electronAPI.onDownloadStatus) {
+  window.electronAPI.onDownloadStatus((status, message) => {
+    if (status === 'done') {
+      updateProgressBar.style.width = '100%';
+      updateProgressText.textContent = 'Installazione completata! Riavvio in corso...';
+      setTimeout(() => {
+        updateModal.classList.add('hidden');
+                resetUpdateModal();
+            }, 3000);
+        } else if (status === 'extract') {
+            updateProgressText.textContent = message;
+        } else if (status === 'error') {
+            console.error(message);
+            updateProgressText.textContent = `Errore: ${message}`;
+            updateProgressContainer.classList.remove('hidden');
+            updateModalUpdateBtn.textContent = 'Riprovare';
+            updateModalUpdateBtn.disabled = false;
+            updateModalIgnoreBtn.disabled = false;
+        } else if (status === 'start') {
+            updateModalUpdateBtn.textContent = 'Scaricamento in corso...';
+        }
+    });
+}
+
+// Run check on load
+window.addEventListener('DOMContentLoaded', checkForUpdates);

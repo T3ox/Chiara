@@ -42,6 +42,14 @@
           <p id="updateModalNewVersion"></p>
         </div>
         <textarea id="updateModalNotes" readonly class="release-notes"></textarea>
+        
+        <!-- Progress Bar Container -->
+        <div id="updateProgressContainer" class="progress-container hidden">
+          <p id="updateProgressText" class="progress-text">Download: 0%</p>
+          <div class="progress-bar-bg">
+            <div id="updateProgressBar" class="progress-bar-fill"></div>
+          </div>
+        </div>
         <div class="modal-actions">
           <button id="updateModalIgnoreBtn" class="btn btn-secondary">Ignora</button>
           <button id="updateModalUpdateBtn" class="btn">Aggiorna</button>

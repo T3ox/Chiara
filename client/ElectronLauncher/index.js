@@ -40,6 +40,17 @@ app.whenReady().then(() => {
           return;
         }
 
+        const totalBytes = parseInt(response.headers['content-length'], 10);
+        let receivedBytes = 0;
+
+        response.on('data', (chunk) => {
+          receivedBytes += chunk.length;
+          if (totalBytes && !isNaN(totalBytes)) {
+            const percentage = Math.min(100, Math.round((receivedBytes / totalBytes) * 100));
+            event.sender.send('download-progress', percentage);
+          }
+        });
+
         response.pipe(fileStream);
 
         fileStream.on('finish', () => {
