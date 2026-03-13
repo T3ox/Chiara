@@ -3,6 +3,14 @@ const selectedPath = document.getElementById('selectedPath');
 const status = document.getElementById('status');
 const confirmBtn = document.getElementById('confirmBtn');
 const folderPicker = document.getElementById('folderPicker');
+const profileBtn = document.getElementById('profileBtn');
+const profileSidebar = document.getElementById('profileSidebar');
+const profileOverlay = document.getElementById('profileOverlay');
+const profileClose = document.getElementById('profileClose');
+const profileName = document.getElementById('profileName');
+const profilePackage = document.getElementById('profilePackage');
+const profileGbFill = document.getElementById('profileGbFill');
+const profileGbLabel = document.getElementById('profileGbLabel');
 
 let selectedFiles = [];
 
@@ -128,6 +136,47 @@ confirmBtn.addEventListener('click', () => {
   // Qui metti la logica equivalente a ConfirmButton_Click
   // es: upload, chiamata API, ecc.
 });
+
+// --- Profile Sidebar Logic --- //
+function toggleProfileSidebar(show) {
+  if (show) {
+    profileSidebar.classList.add('open');
+    profileOverlay.classList.add('visible');
+    profileSidebar.setAttribute('aria-hidden', 'false');
+    fetchProfileData();
+  } else {
+    profileSidebar.classList.remove('open');
+    profileOverlay.classList.remove('visible');
+    profileSidebar.setAttribute('aria-hidden', 'true');
+  }
+}
+
+async function fetchProfileData() {
+  try {
+    const response = await fetch('http://localhost:3000/api/user/profile');
+    if (!response.ok) return;
+    const data = await response.json();
+    updateProfileUI(data);
+  } catch (err) {
+    console.warn("Impossibile recuperare i dati del profilo:", err);
+  }
+}
+
+function updateProfileUI(data) {
+  profileName.textContent = data.name || '—';
+  profilePackage.textContent = data.package || '—';
+  
+  if (data.gbTotal > 0) {
+    const remaining = data.gbTotal - data.gbUsed;
+    const percentage = (remaining / data.gbTotal) * 100;
+    profileGbFill.style.width = `${100 - percentage}%`;
+    profileGbLabel.textContent = `${remaining.toFixed(1)} GB rimanenti`;
+  }
+}
+
+profileBtn.addEventListener('click', () => toggleProfileSidebar(true));
+profileClose.addEventListener('click', () => toggleProfileSidebar(false));
+profileOverlay.addEventListener('click', () => toggleProfileSidebar(false));
 
 // --- Update Checker Logic --- //
 const currentVersion = "0.0.0";

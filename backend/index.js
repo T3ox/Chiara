@@ -27,6 +27,17 @@ app.get('/api/version', (req, res) => {
     });
 });
 
+// Endpoint GET profilo utente
+// TODO: sostituire i dati mock con quelli reali dal database
+app.get('/api/user/profile', (req, res) => {
+    res.json({
+        name:    "Chiara Rossi",
+        package: "Pro — 50 GB",
+        gbUsed:  48,
+        gbTotal: 50
+    });
+});
+
 // Endpoint opzionale: POST per simulare un aggiornamento della versione nel "database"
 app.post('/api/version', (req, res) => {
     const { version, downloadUrl } = req.body;
