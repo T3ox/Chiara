@@ -12,18 +12,18 @@ function setStatus(msg) {
 
 function setSelection(files) {
   selectedFiles = Array.from(files || []);
-  if (selectedFiles.length === 0) {
+  const fileCount = selectedFiles.length;
+
+  if (fileCount === 0) {
     selectedPath.textContent = 'Nessuna cartella selezionata';
     confirmBtn.disabled = true;
     return;
   }
 
-  // In browser non hai un "path" vero. Mostro un riassunto.
-  // Con webkitdirectory hai webkitRelativePath (tipo "Cartella/file.txt").
   const rel = selectedFiles[0].webkitRelativePath || selectedFiles[0].name;
   const folderName = rel.includes('/') ? rel.split('/')[0] : rel;
 
-  selectedPath.textContent = `Selezionato: ${folderName} (${selectedFiles.length} file)`;
+  selectedPath.textContent = `Selezionato: ${folderName} (${fileCount} file)`;
   confirmBtn.disabled = false;
   setStatus('');
 }
@@ -45,13 +45,70 @@ dropzone.addEventListener('drop', async (e) => {
   e.preventDefault();
   dropzone.classList.remove('dragover');
 
-  // Nota: spesso il drop di cartelle richiede DataTransferItem / webkitGetAsEntry (non standard)
-  // Qui gestiamo almeno file drop semplici
-  const files = e.dataTransfer?.files;
-  if (!files || files.length === 0) {
-    setStatus('Niente da selezionare (il browser potrebbe bloccare le cartelle trascinate).');
+  if (!e.dataTransfer || !e.dataTransfer.items) {
+    setStatus('Niente da selezionare.');
     return;
   }
+
+  setStatus('Lettura dei file in corso...');
+
+  const files = [];
+  const queue = [];
+
+  // 1. Popoliamo la coda iniziale con le entry droppate
+  for (let i = 0; i < e.dataTransfer.items.length; i++) {
+    const item = e.dataTransfer.items[i];
+    if (item.kind === 'file') {
+      const entry = item.webkitGetAsEntry();
+      if (entry) queue.push(entry);
+    }
+  }
+
+  // Helper per leggere le directory in modo asincrono
+  const readEntriesAsync = (reader) => new Promise((resolve, reject) => {
+    reader.readEntries(resolve, reject);
+  });
+  
+  // Helper per ottenere l'oggetto File in modo asincrono
+  const getFileAsync = (fileEntry) => new Promise((resolve, reject) => {
+    fileEntry.file(resolve, reject);
+  });
+
+  // 2. Visita BFS di file e sottocartelle
+  while (queue.length > 0) {
+    const entry = queue.shift();
+    if (entry.isFile) {
+      try {
+        const file = await getFileAsync(entry);
+        // Simuliamo la proprietà webkitRelativePath per farla leggere correttamente a setSelection
+        // fullPath tipicamente inizia con uno slash (es: "/CartellaSelezionata/immagine.jpg")
+        Object.defineProperty(file, 'webkitRelativePath', {
+          value: entry.fullPath.substring(1) 
+        });
+        files.push(file);
+      } catch (err) {
+        console.warn('Impossibile leggere il file', entry.name, err);
+      }
+    } else if (entry.isDirectory) {
+      const reader = entry.createReader();
+      try {
+        let entries = await readEntriesAsync(reader);
+        // Le directory con molti file richiedono chiamate multiple a readEntries
+        while (entries.length > 0) {
+          queue.push(...entries);
+          entries = await readEntriesAsync(reader);
+        }
+      } catch (err) {
+        console.warn('Impossibile leggere la cartella', entry.name, err);
+      }
+    }
+  }
+
+  if (files.length === 0) {
+    setStatus('Nessun file trovato in questa cartella.');
+    return;
+  }
+
   setSelection(files);
 });
 
