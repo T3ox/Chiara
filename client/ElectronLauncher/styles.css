@@ -1,20 +1,10 @@
-:root{
-  --bg: #1E1E1E;
-  --fg: #ffffff;
-  --primary: #007ACC;
-  --primaryHover: #005A9E;
-  --panel: #2D2D30;
-  --border: #444;
-  --muted1: #AAA;
-  --muted2: #888;
-  --muted3: #666;
-  --status: #aaaaaa;
-}
+/* ── Palette condivisa (unica fonte di verità) ─────────────────────────── */
+@import "../../theme.css";
     
 body{
   margin: 0;
-  background: var(--bg);
-  color: var(--fg);
+  background: var(--color-bg);
+  color: var(--color-fg);
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   height: 100vh;
   display: grid;
@@ -34,14 +24,14 @@ body{
   text-align: center;
   font-size: 32px;
   font-weight: 700;
-  color: var(--primary);
+  color: var(--color-primary);
   margin: 0 0 20px 0;
 }
 
 .dropzone{
-  border: 2px solid var(--border);
+  border: 2px solid var(--color-border);
   border-radius: 10px;
-  background: var(--panel);
+  background: var(--color-bg-raised);
   display: grid;
   place-items: center;
   text-align: center;
@@ -52,25 +42,25 @@ body{
 }
 
 .dropzone.dragover{
-  border-color: var(--primary);
+  border-color: var(--color-primary);
   transform: scale(1.01);
 }
 
 .icon{
   font-size: 48px;
-  color: var(--muted2);
+  color: var(--color-muted-2);
   line-height: 1;
 }
 
 .hint{
   font-size: 18px;
-  color: var(--muted1);
+  color: var(--color-muted-1);
   margin-top: 10px;
 }
 
 .selectedPath{
   font-size: 14px;
-  color: var(--muted3);
+  color: var(--color-muted-3);
   margin-top: 5px;
   max-width: 600px;
   word-break: break-word;
@@ -81,7 +71,7 @@ body{
 .status{
   text-align: center;
   margin-top: 10px;
-  color: var(--status);
+  color: var(--color-muted-1);
   min-height: 1.2em;
 }
 
@@ -98,25 +88,25 @@ body{
   border: 0;
   border-radius: 5px;
   color: white;
-  background: var(--primary);
+  background: var(--color-primary);
   cursor: pointer;
   transition: background 200ms ease;
 }
 
-.btn:hover{ background: var(--primaryHover); }
+.btn:hover{ background: var(--color-primaryHover); }
 .btn:disabled{ opacity: .6; cursor: not-allowed; }
 
 /* opzionale: bottone secondario per scegliere cartella */
 .btn-secondary{
   background: transparent;
-  color: var(--muted1);
-  border: 1px solid var(--border);
+  color: var(--color-muted-1);
+  border: 1px solid var(--color-border);
   border-radius: 5px;
   padding: 8px 12px;
   cursor: pointer;
 }
 .btn-secondary:hover{
-  border-color: var(--primary);
+  border-color: var(--color-primary);
   color: white;
 }
 
@@ -150,8 +140,8 @@ body{
 }
 
 .modal-content {
-  background: var(--panel);
-  border: 1px solid var(--border);
+  background: var(--color-bg-raised);
+  border: 1px solid var(--color-border);
   border-radius: 10px;
   padding: 24px;
   width: 500px;
@@ -164,13 +154,13 @@ body{
 
 .modal-content h2 {
   margin: 0;
-  color: var(--primary);
+  color: var(--color-primary);
   font-size: 24px;
 }
 
 .modal-content p {
   margin: 0;
-  color: var(--fg);
+  color: var(--color-fg);
 }
 
 .version-info {
@@ -188,10 +178,10 @@ body{
 }
 
 .release-notes {
-  background: var(--bg);
-  border: 1px solid var(--border);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
   border-radius: 5px;
-  color: var(--muted1);
+  color: var(--color-muted-1);
   padding: 12px;
   height: 120px;
   resize: none;
@@ -217,13 +207,13 @@ body{
 }
 
 .progress-text {
-  color: var(--muted1);
+  color: var(--color-muted-1);
   font-size: 13px !important;
   text-align: center;
 }
 
 .progress-bar-bg {
-  background: var(--bg);
+  background: var(--color-bg);
   height: 10px;
   border-radius: 5px;
   overflow: hidden;
@@ -231,7 +221,7 @@ body{
 }
 
 .progress-bar-fill {
-  background: var(--primary);
+  background: var(--color-primary);
   height: 100%;
   width: 0%;
   transition: width 0.1s linear;
