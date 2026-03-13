@@ -11,28 +11,57 @@ const profileName = document.getElementById('profileName');
 const profilePackage = document.getElementById('profilePackage');
 const profileGbFill = document.getElementById('profileGbFill');
 const profileGbLabel = document.getElementById('profileGbLabel');
+const folderSizeWarning = document.getElementById('folderSizeWarning');
+const readProgressContainer = document.getElementById('readProgressContainer');
+const readProgressBar = document.getElementById('readProgressBar');
+const readProgressText = document.getElementById('readProgressText');
 
 let selectedFiles = [];
+let userProfile = null;
 
 function setStatus(msg) {
   status.textContent = msg || '';
 }
 
-function setSelection(files) {
+async function setSelection(files) {
   selectedFiles = Array.from(files || []);
   const fileCount = selectedFiles.length;
 
   if (fileCount === 0) {
     selectedPath.textContent = 'Nessuna cartella selezionata';
     confirmBtn.disabled = true;
+    folderSizeWarning.classList.add('hidden');
     return;
   }
+
+  // Calculate total size in bytes
+  const totalSizeBytes = selectedFiles.reduce((acc, file) => acc + (file.size || 0), 0);
+  const totalSizeGB = totalSizeBytes / (1024 * 1024 * 1024);
 
   const rel = selectedFiles[0].webkitRelativePath || selectedFiles[0].name;
   const folderName = rel.includes('/') ? rel.split('/')[0] : rel;
 
-  selectedPath.textContent = `Selezionato: ${folderName} (${fileCount} file)`;
-  confirmBtn.disabled = false;
+  selectedPath.textContent = `Selezionato: ${folderName} (${fileCount} file, ${totalSizeGB.toFixed(2)} GB)`;
+  
+  // Validation against user profile
+  if (!userProfile) {
+    await fetchProfileData();
+  }
+
+  if (userProfile) {
+    const remainingGB = userProfile.gbTotal - userProfile.gbUsed;
+    if (totalSizeGB > remainingGB) {
+      folderSizeWarning.textContent = `⚠️ Cartella troppo grande (${totalSizeGB.toFixed(2)} GB). Spazio rimanente: ${remainingGB.toFixed(2)} GB.`;
+      folderSizeWarning.classList.remove('hidden');
+      confirmBtn.disabled = true;
+    } else {
+      folderSizeWarning.classList.add('hidden');
+      confirmBtn.disabled = false;
+    }
+  } else {
+    confirmBtn.disabled = false;
+  }
+  
   setStatus('');
 }
 
@@ -58,71 +87,104 @@ dropzone.addEventListener('drop', async (e) => {
     return;
   }
 
-  setStatus('Lettura dei file in corso...');
+  setStatus('Calcolo dei file in corso...');
+  readProgressContainer.classList.remove('hidden');
+  readProgressBar.style.width = '0%';
+  readProgressText.textContent = 'Scansione cartella...';
 
-  const files = [];
-  const queue = [];
+  const entries = [];
+  const fileEntries = [];
 
-  // 1. Popoliamo la coda iniziale con le entry droppate
+  // 1. Passaggio 1: Scansione ricorsiva per trovare tutti i FileEntry
   for (let i = 0; i < e.dataTransfer.items.length; i++) {
     const item = e.dataTransfer.items[i];
     if (item.kind === 'file') {
       const entry = item.webkitGetAsEntry();
-      if (entry) queue.push(entry);
+      if (entry) entries.push(entry);
     }
   }
 
-  // Helper per leggere le directory in modo asincrono
+  const scanQueue = [...entries];
   const readEntriesAsync = (reader) => new Promise((resolve, reject) => {
     reader.readEntries(resolve, reject);
   });
-  
-  // Helper per ottenere l'oggetto File in modo asincrono
+
+  while (scanQueue.length > 0) {
+    const entry = scanQueue.shift();
+    if (entry.isFile) {
+      fileEntries.push(entry);
+    } else if (entry.isDirectory) {
+      const reader = entry.createReader();
+      try {
+        let results = await readEntriesAsync(reader);
+        while (results.length > 0) {
+          scanQueue.push(...results);
+          results = await readEntriesAsync(reader);
+        }
+      } catch (err) {
+        console.warn('Errore lettura cartella:', err);
+      }
+    }
+  }
+
+  const totalFiles = fileEntries.length;
+  if (totalFiles === 0) {
+    setStatus('Nessun file trovato.');
+    readProgressContainer.classList.add('hidden');
+    return;
+  }
+
+  // 2. Passaggio 2: Lettura dei file con progress bar
+  setStatus('Lettura dei file in corso...');
+  const files = [];
   const getFileAsync = (fileEntry) => new Promise((resolve, reject) => {
     fileEntry.file(resolve, reject);
   });
 
-  // 2. Visita BFS di file e sottocartelle
-  while (queue.length > 0) {
-    const entry = queue.shift();
-    if (entry.isFile) {
-      try {
-        const file = await getFileAsync(entry);
-        // Simuliamo la proprietà webkitRelativePath per farla leggere correttamente a setSelection
-        // fullPath tipicamente inizia con uno slash (es: "/CartellaSelezionata/immagine.jpg")
-        Object.defineProperty(file, 'webkitRelativePath', {
-          value: entry.fullPath.substring(1) 
-        });
-        files.push(file);
-      } catch (err) {
-        console.warn('Impossibile leggere il file', entry.name, err);
-      }
-    } else if (entry.isDirectory) {
-      const reader = entry.createReader();
-      try {
-        let entries = await readEntriesAsync(reader);
-        // Le directory con molti file richiedono chiamate multiple a readEntries
-        while (entries.length > 0) {
-          queue.push(...entries);
-          entries = await readEntriesAsync(reader);
-        }
-      } catch (err) {
-        console.warn('Impossibile leggere la cartella', entry.name, err);
-      }
+  for (let i = 0; i < totalFiles; i++) {
+    const entry = fileEntries[i];
+    try {
+      const file = await getFileAsync(entry);
+      Object.defineProperty(file, 'webkitRelativePath', {
+        value: entry.fullPath.substring(1)
+      });
+      files.push(file);
+    } catch (err) {
+      console.warn('Errore lettura file:', entry.name, err);
     }
+
+    // Aggiornamento progress bar
+    const percent = ((i + 1) / totalFiles) * 100;
+    readProgressBar.style.width = `${percent}%`;
+    readProgressText.textContent = `File ${i + 1} di ${totalFiles}`;
   }
 
-  if (files.length === 0) {
-    setStatus('Nessun file trovato in questa cartella.');
-    return;
-  }
-
-  setSelection(files);
+  await setSelection(files);
+  readProgressContainer.classList.add('hidden');
 });
 
 // Folder picker (consigliato)
-folderPicker.addEventListener('change', (e) => {
-  setSelection(e.target.files);
+folderPicker.addEventListener('change', async (e) => {
+  const files = e.target.files;
+  const totalFiles = files.length;
+  
+  if (totalFiles > 50) { // Mostra progress bar solo se ci sono molti file
+    readProgressContainer.classList.remove('hidden');
+    readProgressBar.style.width = '0%';
+    
+    // Purtroppo con il filePicker standard non possiamo intercettare il caricamento singolo facilmente
+    // ma possiamo almeno mostrare la barra mentre calcoliamo la selezione
+    readProgressText.textContent = `Elaborazione di ${totalFiles} file...`;
+    readProgressBar.style.width = '50%';
+    
+    setTimeout(async () => {
+      await setSelection(files);
+      readProgressBar.style.width = '100%';
+      setTimeout(() => readProgressContainer.classList.add('hidden'), 500);
+    }, 100);
+  } else {
+    await setSelection(files);
+  }
 });
 
 // Cliccare sulla dropzone per aprire il selettore file
@@ -156,6 +218,7 @@ async function fetchProfileData() {
     const response = await fetch('http://localhost:3000/api/user/profile');
     if (!response.ok) return;
     const data = await response.json();
+    userProfile = data;
     updateProfileUI(data);
   } catch (err) {
     console.warn("Impossibile recuperare i dati del profilo:", err);

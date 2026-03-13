@@ -75,6 +75,38 @@ body{
   min-height: 1.2em;
 }
 
+.folder-size-warning {
+  text-align: center;
+  margin-top: 5px;
+  color: #ff4d4d;
+  font-size: 14px;
+  font-weight: 600;
+  min-height: 1.2em;
+}
+
+.folder-size-warning.hidden {
+  display: none;
+}
+
+.progress-wrapper {
+  width: 100%;
+  max-width: 600px;
+  margin: 10px auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.progress-wrapper.hidden {
+  display: none;
+}
+
+.progress-label {
+  font-size: 13px;
+  color: var(--color-muted-1);
+  text-align: center;
+}
+
 .actions{
   display: grid;
   place-items: center;
