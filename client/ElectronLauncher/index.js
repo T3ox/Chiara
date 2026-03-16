@@ -3,6 +3,8 @@ const path = require('path');
 const fs = require('fs');
 const https = require('https');
 
+const ALLOWED_UPDATE_HOSTS = ['localhost', 'github.com', 'githubusercontent.com'];
+
 const createWindow = () => {
   const win = new BrowserWindow({
     width: 800,
@@ -20,6 +22,29 @@ app.whenReady().then(() => {
   createWindow();
 
   ipcMain.on('download-update', (event, urlToDownload) => {
+    let parsedUrl;
+    try {
+      parsedUrl = new URL(urlToDownload);
+    } catch (err) {
+      console.error(`[Update] URL malformato: ${urlToDownload}`);
+      event.sender.send('download-status', 'error', 'URL di aggiornamento non valido.');
+      return;
+    }
+
+    // 1. Validazione Protocollo
+    if (parsedUrl.protocol !== 'https:' && parsedUrl.protocol !== 'http:') {
+      console.error(`[Update] Protocollo non supportato: ${parsedUrl.protocol}`);
+      event.sender.send('download-status', 'error', 'Protocollo di download non supportato.');
+      return;
+    }
+
+    // 2. Validazione Host
+    if (!ALLOWED_UPDATE_HOSTS.includes(parsedUrl.hostname)) {
+      console.error(`[Update] Host di download non autorizzato: ${parsedUrl.hostname}`);
+      event.sender.send('download-status', 'error', 'Dominio di aggiornamento non autorizzato.');
+      return;
+    }
+
     const tempPath = app.getPath('temp');
     const fileName = 'update_' + Date.now() + '.zip';
     const destination = path.join(tempPath, fileName);
@@ -27,11 +52,18 @@ app.whenReady().then(() => {
     
     event.sender.send('download-status', 'start', 'Inizio download in corso...');
     
-    const downloadFile = (url) => {
-      https.get(url, (response) => {
+    const downloadFile = (urlObj) => {
+      const httpClient = urlObj.protocol === 'http:' ? require('http') : https;
+
+      httpClient.get(urlObj.href, (response) => {
         // Resource moved
         if (response.statusCode === 301 || response.statusCode === 302) {
-          return downloadFile(response.headers.location);
+          try {
+            const redirectUrl = new URL(response.headers.location, urlObj.href);
+            return downloadFile(redirectUrl);
+          } catch(e) {
+             return event.sender.send('download-status', 'error', 'Errore durante il parsing del redirect.');
+          }
         }
 
         // Generic HTTP error
@@ -137,6 +169,6 @@ app.whenReady().then(() => {
       });
     };
 
-    downloadFile(urlToDownload);
+    downloadFile(parsedUrl);
   });
 });
