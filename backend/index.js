@@ -9,15 +9,33 @@ app.use(cors());
 app.use(express.json());
 
 // Simulazione di una riga del database contenente la versione attuale e il link per il download
-let appInfo = {
-    version: "1.0.0",
-    downloadUrl: "https://github.com/T3ox/Chiara/releases/download/Release/FolderOrganizer_v0-0-9.zip",
-    checksum: "" // Checksum vuoto fa saltare la validazione al client
-};
-
 // Endpoint GET per recuperare la versione attuale
 app.get('/api/version', (req, res) => {
-    res.json(appInfo);
+    const platform = req.query.platform; // 'win32' o 'darwin'
+    
+    // Definiamo i link separati per le release
+    const updates = {
+        win32: "https://github.com/T3ox/FolderOrganizer/releases/download/v0.0.1/FolderOrganizer.Launcher-0.0.1-win.zip",
+        darwin: "https://github.com/T3ox/FolderOrganizer/releases/download/v0.0.1/FolderOrganizer.Launcher-0.0.1-mac.zip"
+    };
+
+    res.json({
+        version: "0.0.1",
+        downloadUrl: updates[platform] || updates.win32, // fallback su windows
+        checksum: "", 
+        releaseNotes: "- Supporto multi-piattaforma per aggiornamenti automatici.\n- Installazione silenziosa su Windows.\n- Miglioramenti alla stabilità dell'estrazione."
+    });
+});
+
+// Endpoint GET profilo utente
+// TODO: sostituire i dati mock con quelli reali dal database
+app.get('/api/user/profile', (req, res) => {
+    res.json({
+        name:    "Chiara Rossi",
+        package: "Pro — 50 GB",
+        gbUsed:  49.5,
+        gbTotal: 50
+    });
 });
 
 // Endpoint opzionale: POST per simulare un aggiornamento della versione nel "database"
