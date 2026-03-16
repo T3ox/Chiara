@@ -13,3 +13,26 @@ publish/
 node_modules
 site/node_modules
 .env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+env/
+ENV/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.log
+
+# .NET
+**/bin/
+**/obj/
