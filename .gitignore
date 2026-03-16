@@ -1,17 +1,16 @@
-﻿# Build
-client/FolderOrganizerLauncher/bin/
-client/FolderOrganizerLauncher/obj
+# Launcher
+**/bin/
+**/obj/
 client/ElectronLauncher/dist
 
 # Visual Studio
 .vs/
 
-# Publish output
-publish/
+# Frontend
+.vite/
 
 # Node.js
 node_modules
-site/node_modules
 .env
 __pycache__/
 *.pyc
@@ -32,7 +31,3 @@ htmlcov/
 .DS_Store
 Thumbs.db
 *.log
-
-# .NET
-**/bin/
-**/obj/
