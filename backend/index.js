@@ -20,7 +20,7 @@ app.get('/api/version', (req, res) => {
     };
 
     res.json({
-        version: "0.0.1",
+        version: "0.1.0",
         downloadUrl: updates[platform] || updates.win32, // fallback su windows
         checksum: "", 
         releaseNotes: "- Supporto multi-piattaforma per aggiornamenti automatici.\n- Installazione silenziosa su Windows.\n- Miglioramenti alla stabilità dell'estrazione."
