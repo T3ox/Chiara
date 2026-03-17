@@ -242,7 +242,7 @@ profileClose.addEventListener('click', () => toggleProfileSidebar(false));
 profileOverlay.addEventListener('click', () => toggleProfileSidebar(false));
 
 // --- Update Checker Logic --- //
-const currentVersion = "0.0.0";
+const currentVersion = "0.1.0";
 const versionLabel = document.getElementById('versionLabel');
 versionLabel.textContent = `Version: ${currentVersion}`;
 const updateModal = document.getElementById('updateModal');
