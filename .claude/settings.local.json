@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
+<<<<<<< Updated upstream
       "Bash(npm run:*)"
+=======
+      "Bash(npm install:*)"
+>>>>>>> Stashed changes
     ]
   }
 }
