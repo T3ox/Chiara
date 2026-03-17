@@ -1,4 +1,3 @@
-const { app } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const https = require('https');
@@ -13,7 +12,7 @@ const {
 const { extractZip } = require('./extractor');
 const { installPackage } = require('./installer');
 
-function downloadUpdate(urlToDownload, event) {
+function downloadUpdate(urlToDownload, event, app) {
   let parsedUrl;
   try {
     parsedUrl = new URL(urlToDownload);

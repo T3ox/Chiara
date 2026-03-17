@@ -1,12 +1,12 @@
-const { app, ipcMain, BrowserWindow } = require('electron');
-const { createWindow } = require('./windowManager');
+const { app, ipcMain } = require('electron');
+const { createWindow, hasOpenWindows } = require('./windowManager');
 const { downloadUpdate } = require('./updateService');
 
 app.whenReady().then(() => {
   createWindow();
 
   ipcMain.on('download-update', (event, urlToDownload) => {
-    downloadUpdate(urlToDownload, event);
+    downloadUpdate(urlToDownload, event, app);
   });
 });
 
@@ -17,7 +17,7 @@ app.on('window-all-closed', () => {
 });
 
 app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
+  if (!hasOpenWindows()) {
     createWindow();
   }
 });

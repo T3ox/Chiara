@@ -14,9 +14,15 @@ function createWindow() {
 
   win.loadFile('index.html');
   win.setMenuBarVisibility(false);
+
   return win;
+}
+
+function hasOpenWindows() {
+  return BrowserWindow.getAllWindows().length > 0;
 }
 
 module.exports = {
   createWindow,
+  hasOpenWindows
 };
