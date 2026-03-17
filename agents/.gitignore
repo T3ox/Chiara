@@ -1,0 +1,12 @@
+# Ignore temp processing files
+.tmp/
+directives/
+execution/
+setup.md
+
+# Ignore execution environment files
+.env
+
+# Ignore credentials
+credentials.json
+token.json
