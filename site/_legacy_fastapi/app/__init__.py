@@ -1,1 +1,0 @@
-"""FolderOrganizer site application package."""
