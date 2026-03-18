@@ -48,7 +48,8 @@ async function setSelection(files) {
 
   // Calculate total size in bytes
   const totalSizeBytes = selectedFiles.reduce((acc, file) => acc + (file.size || 0), 0);
-  const totalSizeGB = totalSizeBytes / (1024 * 1024 * 1024);
+  const totalSizeMB = totalSizeBytes / (1024 * 1024);
+  const totalSizeGB = totalSizeMB / 1024;
 
   const rel = selectedFiles[0].webkitRelativePath || selectedFiles[0].name;
   const folderName = rel.includes('/') ? rel.split('/')[0] : rel;
@@ -61,11 +62,10 @@ async function setSelection(files) {
   }
 
   if (userProfile) {
-    // MOCK
-    // const remainingGB = userProfile.gbTotal - userProfile.gbUsed;
-    const remainingGB = 0;
+    const remainingMB = userProfile.mbTotal - userProfile.mbUsed;
+    const remainingGB = remainingMB / 1024;
     
-    if (totalSizeGB > remainingGB) {
+    if (totalSizeMB > remainingMB) {
       folderSizeWarningText.textContent = `⚠️ Cartella troppo grande (${totalSizeGB.toFixed(2)} GB). Spazio rimanente: ${remainingGB.toFixed(2)} GB.`;
       folderSizeWarning.classList.remove('hidden');
       confirmBtn.disabled = true;
@@ -244,11 +244,12 @@ function updateProfileUI(data) {
   profileName.textContent = data.name || '—';
   profilePackage.textContent = data.package || '—';
   
-  if (data.gbTotal > 0) {
-    const remaining = data.gbTotal - data.gbUsed;
-    const percentage = (remaining / data.gbTotal) * 100;
+  if (data.mbTotal > 0) {
+    const remainingMB = data.mbTotal - data.mbUsed;
+    const remainingGB = remainingMB / 1024;
+    const percentage = (remainingMB / data.mbTotal) * 100;
     profileGbFill.style.width = `${100 - percentage}%`;
-    profileGbLabel.textContent = `${remaining.toFixed(1)} GB rimanenti`;
+    profileGbLabel.textContent = `${remainingGB.toFixed(1)} GB rimanenti`;
   }
 }
 
