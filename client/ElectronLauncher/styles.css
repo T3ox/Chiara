@@ -1,5 +1,5 @@
 /* ── Palette condivisa (unica fonte di verità) ─────────────────────────── */
-@import "../../theme.css";
+@import "./theme.generated.css";
     
 body{
   margin: 0;
