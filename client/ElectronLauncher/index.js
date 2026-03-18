@@ -1,4 +1,4 @@
-const { app, ipcMain } = require('electron');
+const { app, ipcMain, shell } = require('electron');
 const { createWindow, hasOpenWindows } = require('./windowManager');
 const { downloadUpdate } = require('./updateService');
 
@@ -7,6 +7,10 @@ app.whenReady().then(() => {
 
   ipcMain.on('download-update', (event, urlToDownload) => {
     downloadUpdate(urlToDownload, event, app);
+  });
+
+  ipcMain.on('open-external', (_event, url) => {
+    shell.openExternal(url);
   });
 });
 

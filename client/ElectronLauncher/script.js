@@ -12,6 +12,18 @@ const profilePackage = document.getElementById('profilePackage');
 const profileGbFill = document.getElementById('profileGbFill');
 const profileGbLabel = document.getElementById('profileGbLabel');
 const folderSizeWarning = document.getElementById('folderSizeWarning');
+const folderSizeWarningText = document.getElementById('folderSizeWarningText');
+const upgradeBtn = document.getElementById('upgradeBtn');
+
+upgradeBtn.addEventListener('click', (e) => {
+  e.preventDefault();
+  const pricingUrl = 'http://localhost:5173/prezzi';
+  if (window.electronAPI && window.electronAPI.openExternal) {
+    window.electronAPI.openExternal(pricingUrl);
+  } else {
+    window.open(pricingUrl, '_blank');
+  }
+});
 const readProgressContainer = document.getElementById('readProgressContainer');
 const readProgressBar = document.getElementById('readProgressBar');
 const readProgressText = document.getElementById('readProgressText');
@@ -49,9 +61,12 @@ async function setSelection(files) {
   }
 
   if (userProfile) {
-    const remainingGB = userProfile.gbTotal - userProfile.gbUsed;
+    // MOCK
+    // const remainingGB = userProfile.gbTotal - userProfile.gbUsed;
+    const remainingGB = 0;
+    
     if (totalSizeGB > remainingGB) {
-      folderSizeWarning.textContent = `⚠️ Cartella troppo grande (${totalSizeGB.toFixed(2)} GB). Spazio rimanente: ${remainingGB.toFixed(2)} GB.`;
+      folderSizeWarningText.textContent = `⚠️ Cartella troppo grande (${totalSizeGB.toFixed(2)} GB). Spazio rimanente: ${remainingGB.toFixed(2)} GB.`;
       folderSizeWarning.classList.remove('hidden');
       confirmBtn.disabled = true;
     } else {
