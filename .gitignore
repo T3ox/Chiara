@@ -1,1 +1,33 @@
-﻿.env
+# Launcher
+**/bin/
+**/obj/
+client/ElectronLauncher/dist
+
+# Visual Studio
+.vs/
+
+# Frontend
+.vite/
+
+# Node.js
+node_modules
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+env/
+ENV/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.log
