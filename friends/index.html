@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Friends HQ 🚀</title>
+  <title>Friends HQ</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Special+Elite&family=Cutive+Mono&family=Archivo+Black&family=Permanent+Marker&family=Rubik+Mono+One&family=IBM+Plex+Mono:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/src/style.css" />
 </head>
 <body>
@@ -16,16 +16,22 @@
   <!-- INTRO -->
   <div id="intro">
     <div class="intro-content">
-      <div class="intro-badge">✦ Est. 2025</div>
-      <h1>Friends<br><span>HQ</span></h1>
-      <p>Il quartier generale del gruppo.<br>Trova la tua scrivania.</p>
+      <h1 class="intro-title" aria-label="Friends HQ">
+        <span class="friends-word" aria-hidden="true">
+          <span class="paper-letter paper-letter-f">F</span>
+          <span class="paper-letter paper-letter-r">r</span>
+          <span class="paper-letter paper-letter-i">i</span>
+          <span class="paper-letter paper-letter-e">e</span>
+          <span class="paper-letter paper-letter-n">n</span>
+          <span class="paper-letter paper-letter-d">d</span>
+          <span class="paper-letter paper-letter-s">s</span>
+        </span>
+        <span class="hq-word" data-text="HQ" aria-hidden="true">HQ</span>
+      </h1>
+      <p>Il quartier generale del gruppo.<br>Incontra il team.</p>
       <button id="enter-btn">Entra nell'ufficio →</button>
     </div>
-    <div class="intro-bg-shapes">
-      <div class="shape s1"></div>
-      <div class="shape s2"></div>
-      <div class="shape s3"></div>
-    </div>
+    <div id="code-rain-container"></div>
   </div>
 
   <!-- HINT -->
@@ -46,16 +52,18 @@
       <div class="card-role" id="card-role"></div>
       <div class="card-divider"></div>
       <div class="card-bio" id="card-bio"></div>
-      <div class="card-tags" id="card-tags"></div>
+      <div class="card-skills" id="card-skills"></div>
       <div class="card-funfact" id="card-funfact"></div>
+      <div class="card-social" id="card-social"></div>
+      <div class="card-nav">
+        <button class="card-nav-btn" id="card-prev"></button>
+        <button class="card-nav-btn" id="card-next"></button>
+      </div>
     </div>
   </div>
 
-  <!-- PERSON NAV DOTS -->
-  <div id="person-nav" class="hidden">
-    <div class="nav-label">TEAM</div>
-    <div class="nav-dots" id="nav-dots"></div>
-  </div>
+  <!-- PERSON NAV DOCK -->
+  <div id="person-nav" class="hidden"></div>
 
   <script type="module" src="/src/main.js"></script>
 </body>
