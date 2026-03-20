@@ -6,9 +6,9 @@
   <title>Friends HQ 🚀</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="./assets/index-DATbERTN.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-DyS4VH6h.css">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rubik+Dirt&family=Space+Grotesk:wght@400;500;600;700&family=Special+Elite&display=swap" rel="stylesheet">
+  <script type="module" crossorigin src="./assets/index-CNKrm9Wx.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-CLxIxv7T.css">
 </head>
 <body>
 
@@ -16,9 +16,33 @@
 
   <!-- INTRO -->
   <div id="intro">
+    <div class="intro-codewall" id="intro-codewall" aria-hidden="true"></div>
     <div class="intro-content">
-      <div class="intro-badge">✦ Est. 2025</div>
-      <h1>Friends<br><span>HQ</span></h1>
+      <div class="intro-logo" aria-label="Friends HQ">
+        <div class="logo-row logo-row-top">
+          <div class="logo-card card-F" style="--card-rotate:-5deg;--card-color:#1e293b;--letter-font:'Rubik Dirt',sans-serif;--letter-weight:400;">
+            <span>F</span>
+          </div>
+          <div class="logo-card card-r" style="--card-rotate:3deg;--card-color:#0f172a;--letter-font:'Special Elite',sans-serif;--letter-weight:400;">
+            <span>r</span>
+          </div>
+          <div class="logo-card card-i" style="--card-rotate:-2deg;--card-color:#1a1a2e;--letter-font:'Orbitron',sans-serif;--letter-weight:700;">
+            <span>i</span>
+          </div>
+          <div class="logo-card card-e" style="--card-rotate:4deg;--card-color:#162032;--letter-font:'Rubik Dirt',sans-serif;--letter-weight:400;">
+            <span>e</span>
+          </div>
+          <div class="logo-card card-n" style="--card-rotate:-3deg;--card-color:#1c1917;--letter-font:'Special Elite',sans-serif;--letter-weight:400;">
+            <span>n</span>
+          </div>
+          <div class="logo-card card-d" style="--card-rotate:2deg;--card-color:#18181b;--letter-font:'Orbitron',sans-serif;--letter-weight:700;">
+            <span>d</span>
+          </div>
+          <div class="logo-card card-s" style="--card-rotate:-4deg;--card-color:#1e1b2e;--letter-font:'Rubik Dirt',sans-serif;--letter-weight:400;">
+            <span>s</span>
+          </div>
+        </div>
+      </div>
       <p>Il quartier generale del gruppo.<br>Trova la tua scrivania.</p>
       <button id="enter-btn">Entra nell'ufficio →</button>
     </div>
@@ -29,9 +53,16 @@
     </div>
   </div>
 
+  <!-- OVERVIEW TITLE -->
+  <div id="overview-title" class="hidden">
+    <h1 class="overview-heading">FRIENDS HQ</h1>
+    <p class="overview-subtitle">Quartier Generale del Gruppo</p>
+    <div class="overview-line"></div>
+  </div>
+
   <!-- HINT -->
   <div id="hints" class="hidden">
-    <span>🖱️</span> Clicca su una scrivania · Trascina per ruotare
+    <span>🖱️</span> Scorri, usa le frecce o i pulsanti per cambiare ufficio
   </div>
 
   <!-- BACK BUTTON -->
@@ -56,6 +87,12 @@
   <div id="person-nav" class="hidden">
     <div class="nav-label">TEAM</div>
     <div class="nav-dots" id="nav-dots"></div>
+  </div>
+
+  <div id="showcase-controls" class="hidden">
+    <button class="showcase-btn" id="prev-person" aria-label="Persona precedente">←</button>
+    <div class="showcase-status" id="showcase-status">1 / 5</div>
+    <button class="showcase-btn" id="next-person" aria-label="Persona successiva">→</button>
   </div>
 
 </body>

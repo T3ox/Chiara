@@ -1,0 +1,18 @@
+[33mcommit 9dc7cf37c7e873ac111c050fa2e23ec4b2dcdb2e[m[33m ([m[1;32msito-gruppo[m[33m)[m
+Author: Logitacs <leoalloni02@gmail.com>
+Date:   Wed Mar 18 08:14:25 2026 +0100
+
+    Friends Update
+
+ friends/.vite/deps_temp_7269665f/package.json  |    3 [32m+[m
+ friends/dist/assets/index-CCXlTnFj.css         |    1 [32m+[m
+ friends/dist/assets/index-DATbERTN.js          | 3842 [31m-----------------------[m
+ friends/dist/assets/index-DelLtSuU.js          | 3928 [32m++++++++++++++++++++++++[m
+ friends/dist/assets/index-DyS4VH6h.css         |    1 [31m-[m
+ friends/dist/index.html                        |  132 [32m+[m[31m-[m
+ friends/index.html                             |   40 [32m+[m[31m-[m
+ friends/node_modules/.vite/deps/_metadata.json |   12 [32m+[m[31m-[m
+ friends/src/main.js                            | 2300 [32m++++++++++++[m[31m--[m
+ friends/src/persons.js                         |   79 [32m+[m[31m-[m
+ friends/src/style.css                          |  463 [32m++[m[31m-[m
+ 11 files changed, 6516 insertions(+), 4285 deletions(-)
