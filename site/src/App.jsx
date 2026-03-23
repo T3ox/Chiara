@@ -12,6 +12,7 @@
  *  /privacy     → PrivacyPage   (informativa privacy)
  *  /accedi      → LoginPage     (placeholder login)
  *  /termini     → TermsPage     (termini di servizio)
+ *  /download    → DownloadPage  (download software .NET)
  *  /account/*   → LoginPage     (reindirizza all'accesso)
  *  *            → /             (redirect per URL sconosciuti)
  *
@@ -26,6 +27,7 @@ import DemoPage from "./pages/DemoPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import LoginPage from "./pages/LoginPage";
 import TermsPage from "./pages/TermsPage";
+import DownloadPage from "./pages/DownloadPage";
 
 /**
  * Hook che attiva le animazioni di "reveal" quando gli elementi entrano nel viewport.
@@ -113,6 +115,7 @@ export default function App() {
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/accedi" element={<LoginPage />} />
         <Route path="/termini" element={<TermsPage />} />
+        <Route path="/download" element={<DownloadPage />} />
         <Route path="/account/*" element={<LoginPage fromAccountPath />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
