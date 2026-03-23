@@ -10,7 +10,7 @@
  * L'utente può cliccare i pulsanti "Prima" / "Dopo" per vedere la differenza.
  * Le cartelle nello stato "Dopo" possono essere aperte/chiuse.
  */
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { LANDING_CONTENT } from "../../data/landingContent";
 import { getExtension, getIconPath, getTypeLabel } from "../../utils/fileUtils";
 
@@ -37,10 +37,36 @@ export default function BeforeAfterSection() {
     return Array.from(grouped.entries());
   }, []);
 
+  // Conteggio file per i badge nei toggle
+  const beforeCount = LANDING_CONTENT.why.examples.before.length;
+  const afterFolderCount = groupedAfter.length;
+
   // Apre o chiude una cartella nella vista "dopo"
   const toggleFolder = (folderPath) => {
     setOpenFolders((prev) => ({ ...prev, [folderPath]: !prev[folderPath] }));
   };
+
+  // Switch vista con auto-apertura della prima cartella nel "Dopo"
+  const switchToAfter = useCallback(() => {
+    setIsAfterState(true);
+    // Apre automaticamente la prima cartella per mostrare subito il risultato
+    if (groupedAfter.length > 0) {
+      setOpenFolders((prev) => {
+        const first = groupedAfter[0][0];
+        if (prev[first]) return prev;
+        return { ...prev, [first]: true };
+      });
+    }
+  }, [groupedAfter]);
+
+  // Calcolo dimensione totale simulata per la status bar
+  const totalSize = useMemo(() => {
+    const items = isAfterState
+      ? LANDING_CONTENT.why.examples.after.map((f) => f.split("/").pop() || f)
+      : LANDING_CONTENT.why.examples.before;
+    const total = items.reduce((sum, f, i) => sum + 120 + f.length * 7 + i * 23, 0);
+    return total >= 1024 ? `${(total / 1024).toFixed(1)} MB` : `${total} KB`;
+  }, [isAfterState]);
 
   return (
     <section className="section section-alt">
@@ -81,6 +107,7 @@ export default function BeforeAfterSection() {
                     onClick={() => setIsAfterState(false)}
                   >
                     Prima
+                    <span className="toggle-badge">{beforeCount} file</span>
                   </button>
                   <button
                     className="before-after-toggle-option"
@@ -88,9 +115,10 @@ export default function BeforeAfterSection() {
                     role="tab"
                     aria-selected={isAfterState}
                     aria-controls="compare-stage"
-                    onClick={() => setIsAfterState(true)}
+                    onClick={switchToAfter}
                   >
                     Dopo
+                    <span className="toggle-badge">{afterFolderCount} cartelle</span>
                   </button>
                 </div>
               </div>
@@ -104,23 +132,36 @@ export default function BeforeAfterSection() {
                 aria-live="polite"
                 aria-label="Simulazione organizzazione cartella"
               >
-                {/* Barra superiore stile Windows */}
+                {/* Barra superiore stile macOS con pallini colorati */}
                 <div className="folder-window-top">
                   <div className="window-actions">
-                    <span className="folder-dot"></span>
-                    <span className="folder-dot"></span>
-                    <span className="folder-dot"></span>
+                    <span className="folder-dot dot-close"></span>
+                    <span className="folder-dot dot-minimize"></span>
+                    <span className="folder-dot dot-maximize"></span>
                   </div>
-                  <strong>Esplora file - Confronto organizzazione</strong>
+                  <strong>
+                    {isAfterState ? "📁 Output organizzato — FolderOrganizer" : "Esplora file — Cartella da organizzare"}
+                  </strong>
                 </div>
 
-                {/* Barra del percorso */}
+                {/* Barra del percorso — cambia in base allo stato */}
                 <div className="folder-pathbar">
                   <span className="path-chip">Questo PC</span>
                   <span className="path-sep">&gt;</span>
-                  <span className="path-chip">Cartella sorgente</span>
-                  <span className="path-sep">&gt;</span>
-                  <span className="path-chip active">Output ordinato</span>
+                  {isAfterState ? (
+                    <>
+                      <span className="path-chip">Archivio</span>
+                      <span className="path-sep">&gt;</span>
+                      <span className="path-chip active">Output ordinato</span>
+                      <span className="ai-badge" aria-label="Organizzato con AI">✨ AI</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="path-chip">Download</span>
+                      <span className="path-sep">&gt;</span>
+                      <span className="path-chip active">Documenti vari</span>
+                    </>
+                  )}
                 </div>
 
                 {/* Intestazione colonne della lista file */}
@@ -131,7 +172,7 @@ export default function BeforeAfterSection() {
                   <li>Dimensione</li>
                 </ul>
 
-                {/* Area che mostra "prima" o "dopo" in base allo stato */}
+                {/* Area che mostra "prima" o "dopo" con crossfade */}
                 <div
                   id="compare-stage"
                   className={`morph-stage compare-stage${isAfterState ? " is-after" : ""}`}
@@ -224,6 +265,17 @@ export default function BeforeAfterSection() {
                       })}
                     </ul>
                   </div>
+                </div>
+
+                {/* Status bar inferiore stile file manager */}
+                <div className="folder-statusbar">
+                  <span>
+                    {isAfterState
+                      ? `${afterFolderCount} cartelle · ${LANDING_CONTENT.why.examples.after.length} file`
+                      : `${beforeCount} elementi`
+                    }
+                  </span>
+                  <span>{totalSize}</span>
                 </div>
               </div>
             </div>

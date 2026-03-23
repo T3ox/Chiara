@@ -1,3 +1,9 @@
+/**
+ * TermsPage — termini di servizio.
+ *
+ * Sezioni: descrizione servizio, limitazioni responsabilità, backup/rinomina,
+ * contenuti sensibili, rimborsi/cancellazione, obblighi utente, modifiche ai termini.
+ */
 import { Link } from "react-router-dom";
 import { siteConfig } from "../data/siteConfig";
 

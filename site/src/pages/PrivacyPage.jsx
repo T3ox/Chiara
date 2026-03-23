@@ -1,3 +1,9 @@
+/**
+ * PrivacyPage — informativa sulla privacy (GDPR).
+ *
+ * Sezioni: dati raccolti, dati elaborati dal servizio, terze parti,
+ * conservazione, diritti dell'interessato, contatto privacy.
+ */
 import { Link } from "react-router-dom";
 import { siteConfig } from "../data/siteConfig";
 

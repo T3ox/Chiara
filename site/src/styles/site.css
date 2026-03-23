@@ -2229,10 +2229,10 @@ button:focus-visible {
 .before-after-toggle-option {
   position: relative;
   z-index: 1;
-  min-height: 34px;
+  min-height: 38px;
   border: 0;
   border-radius: 999px;
-  padding: 0 14px;
+  padding: 4px 16px;
   background: transparent;
   color: var(--muted);
   font: inherit;
@@ -2240,6 +2240,18 @@ button:focus-visible {
   font-weight: 700;
   cursor: pointer;
   transition: color var(--duration-fast) var(--ease-standard);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+/* Badge conteggio sotto il label del toggle */
+.toggle-badge {
+  font-size: 10px;
+  font-weight: 500;
+  opacity: 0.7;
+  letter-spacing: 0.02em;
 }
 
 .before-after-toggle:not(.is-after) .before-after-toggle-option:first-child,
@@ -2308,27 +2320,33 @@ button:focus-visible {
   --col-size: minmax(82px, 96px);
   width: min(100%, 940px);
   border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   background: color-mix(in srgb, var(--surface-alt) 84%, var(--surface));
   overflow: hidden;
+  box-shadow: 0 4px 24px color-mix(in srgb, var(--primary) 8%, transparent),
+              0 1px 3px color-mix(in srgb, var(--ink) 6%, transparent);
 }
 
 .folder-window-top {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 10px;
-  min-height: 36px;
-  padding: 0 10px;
+  min-height: 38px;
+  padding: 0 12px;
   border-bottom: 1px solid var(--line);
   background: color-mix(in srgb, var(--surface) 92%, transparent);
 }
 
 .folder-window-top strong {
+  flex: 1;
+  text-align: center;
   font-size: 12px;
   letter-spacing: 0.02em;
   color: var(--ink);
-  font-weight: 700;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .window-actions {
@@ -2338,11 +2356,16 @@ button:focus-visible {
 }
 
 .folder-dot {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border-radius: 999px;
   background: color-mix(in srgb, var(--muted) 60%, var(--surface));
 }
+
+/* Pallini colorati stile macOS */
+.dot-close { background: #ff5f57; }
+.dot-minimize { background: #febc2e; }
+.dot-maximize { background: #28c840; }
 
 .folder-pathbar {
   min-height: 32px;
@@ -2371,6 +2394,19 @@ button:focus-visible {
 .path-sep {
   color: var(--muted);
   font-size: 11px;
+}
+
+/* Badge "AI" nella pathbar dello stato "Dopo" */
+.ai-badge {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 12%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--primary) 30%, var(--line));
+  border-radius: 6px;
+  padding: 2px 8px;
 }
 
 .explorer-head {
@@ -2423,23 +2459,29 @@ button:focus-visible {
 }
 
 .compare-layer {
-  position: relative;
+  transition: opacity 350ms ease, transform 350ms ease;
 }
 
 .layer-before {
-  display: block;
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .layer-after {
   display: none;
+  opacity: 0;
+  transform: translateY(6px);
 }
 
 .compare-stage.is-after .layer-before {
   display: none;
+  opacity: 0;
 }
 
 .compare-stage.is-after .layer-after {
   display: block;
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .explorer-row {
@@ -2451,6 +2493,7 @@ button:focus-visible {
   border-radius: 6px;
   border: 1px solid transparent;
   background: color-mix(in srgb, var(--surface) 82%, transparent);
+  transition: border-color 180ms ease, background 180ms ease;
 }
 
 .explorer-folder-row {
@@ -2481,14 +2524,20 @@ button:focus-visible {
 
 .folder-children {
   list-style: none;
-  margin: 4px 0 0;
+  margin: 0;
   padding: 0;
-  display: none;
+  display: grid;
   gap: 3px;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 300ms ease, opacity 250ms ease, margin 300ms ease;
 }
 
 .folder-group.is-open .folder-children {
-  display: grid;
+  max-height: 500px;
+  opacity: 1;
+  margin-top: 4px;
 }
 
 .folder-chevron {
@@ -2567,6 +2616,20 @@ button:focus-visible {
 .size-col {
   justify-content: flex-end;
   padding-right: 8px;
+}
+
+/* Status bar inferiore del file browser */
+.folder-statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 28px;
+  padding: 0 10px;
+  border-top: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.01em;
 }
 
 .file-type-icon {
@@ -3023,6 +3086,61 @@ button:focus-visible {
    DOWNLOAD PAGE
    =================================================================== */
 
+/* Selettore piattaforma (tab Windows / macOS) */
+.platform-selector {
+  display: flex;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-md);
+}
+
+.platform-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 12px 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--duration-base) var(--ease-standard);
+}
+
+.platform-tab:hover {
+  border-color: var(--line-strong);
+  color: var(--ink);
+  background: var(--surface-alt);
+}
+
+.platform-tab--active {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 8%, var(--surface));
+  color: var(--primary);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--primary) 16%, transparent);
+}
+
+.platform-tab--active:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.platform-tab-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.download-platform-badge {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 10%, var(--surface));
+  padding: 2px 10px;
+  border-radius: var(--radius-sm);
+}
+
 /* Card hero download */
 .download-hero-card {
   display: flex;
@@ -3255,6 +3373,15 @@ button:focus-visible {
 
 /* Responsive download page */
 @media (max-width: 768px) {
+  .platform-selector {
+    width: 100%;
+  }
+
+  .platform-tab {
+    flex: 1;
+    justify-content: center;
+  }
+
   .download-hero-card {
     flex-direction: column;
     align-items: stretch;

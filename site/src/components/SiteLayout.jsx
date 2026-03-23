@@ -46,6 +46,27 @@ function mapActiveRoute(pathname) {
   return current;
 }
 
+/** Voci di navigazione condivise tra desktop e mobile (pagine interne, non landing). */
+const SITE_NAV_ITEMS = [
+  { to: "/", label: "Home" },
+  { to: "/prezzi", label: "Prezzi" },
+  { to: "/demo", label: "Demo" },
+  { to: "/download", label: "Download" },
+  { to: "/privacy", label: "Privacy" },
+  { to: "/termini", label: "Termini" },
+];
+
+/** Link aggiuntivi mostrati nella navbar della landing (oltre alle sezioni anchor). */
+const LANDING_EXTRA_NAV = [
+  { to: "/prezzi", label: "Prezzi" },
+  { to: "/demo", label: "Demo" },
+  { to: "/download", label: "Download" },
+  { to: "/termini", label: "Termini" },
+];
+
+/** Emette l'evento custom per riaprire il banner cookie dal footer. */
+const openCookieSettings = () => window.dispatchEvent(new CustomEvent("open-cookie-settings"));
+
 /** Link di navigazione per le pagine del sito (non la landing). */
 function NavItems({ onClick }) {
   const location = useLocation();
@@ -54,12 +75,11 @@ function NavItems({ onClick }) {
 
   return (
     <>
-      <NavLink to="/" className={isActive("/") ? "active" : ""} onClick={onClick}>Home</NavLink>
-      <NavLink to="/prezzi" className={isActive("/prezzi") ? "active" : ""} onClick={onClick}>Prezzi</NavLink>
-      <NavLink to="/demo" className={isActive("/demo") ? "active" : ""} onClick={onClick}>Demo</NavLink>
-      <NavLink to="/download" className={isActive("/download") ? "active" : ""} onClick={onClick}>Download</NavLink>
-      <NavLink to="/privacy" className={isActive("/privacy") ? "active" : ""} onClick={onClick}>Privacy</NavLink>
-      <NavLink to="/termini" className={isActive("/termini") ? "active" : ""} onClick={onClick}>Termini</NavLink>
+      {SITE_NAV_ITEMS.map((item) => (
+        <NavLink key={item.to} to={item.to} className={isActive(item.to) ? "active" : ""} onClick={onClick}>
+          {item.label}
+        </NavLink>
+      ))}
     </>
   );
 }
@@ -115,7 +135,6 @@ export default function SiteLayout() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
 
   // Scroll tracking: aggiorna il link attivo nella navbar della landing
   // in base alla sezione anchor visibile in quel momento
@@ -231,10 +250,9 @@ export default function SiteLayout() {
                 {/* Sezioni anchor della landing */}
                 <LandingNavItems activeHref={activeLandingHref} onClick={handleLandingAnchorClick} />
                 {/* Link alle pagine separate */}
-                <NavLink to="/prezzi" className={({ isActive }) => (isActive ? "active" : "")}>Prezzi</NavLink>
-                <NavLink to="/demo" className={({ isActive }) => (isActive ? "active" : "")}>Demo</NavLink>
-                <NavLink to="/download" className={({ isActive }) => (isActive ? "active" : "")}>Download</NavLink>
-                <NavLink to="/termini" className={({ isActive }) => (isActive ? "active" : "")}>Termini</NavLink>
+                {LANDING_EXTRA_NAV.map((item) => (
+                  <NavLink key={item.to} to={item.to} className={({ isActive }) => (isActive ? "active" : "")}>{item.label}</NavLink>
+                ))}
               </>
             ) : (
               <NavItems />
@@ -274,10 +292,9 @@ export default function SiteLayout() {
               {isLanding ? (
                 <>
                   <LandingNavItems activeHref={activeLandingHref} onClick={handleLandingAnchorClick} />
-                  <NavLink to="/prezzi" className={({ isActive }) => (isActive ? "active" : "")} onClick={() => setIsMenuOpen(false)}>Prezzi</NavLink>
-                  <NavLink to="/demo" className={({ isActive }) => (isActive ? "active" : "")} onClick={() => setIsMenuOpen(false)}>Demo</NavLink>
-                  <NavLink to="/download" className={({ isActive }) => (isActive ? "active" : "")} onClick={() => setIsMenuOpen(false)}>Download</NavLink>
-                  <NavLink to="/termini" className={({ isActive }) => (isActive ? "active" : "")} onClick={() => setIsMenuOpen(false)}>Termini</NavLink>
+                  {LANDING_EXTRA_NAV.map((item) => (
+                    <NavLink key={item.to} to={item.to} className={({ isActive }) => (isActive ? "active" : "")} onClick={() => setIsMenuOpen(false)}>{item.label}</NavLink>
+                  ))}
                   <Link className="access-btn mobile-demo-btn" to="/accedi" onClick={() => setIsMenuOpen(false)}>Accedi</Link>
                 </>
               ) : (
@@ -334,7 +351,7 @@ export default function SiteLayout() {
                     <button
                       type="button"
                       className="cookie-settings-link"
-                      onClick={() => window.dispatchEvent(new CustomEvent("open-cookie-settings"))}
+                      onClick={openCookieSettings}
                     >
                       Gestisci cookie
                     </button>
@@ -378,7 +395,7 @@ export default function SiteLayout() {
                     <button
                       type="button"
                       className="cookie-settings-link"
-                      onClick={() => window.dispatchEvent(new CustomEvent("open-cookie-settings"))}
+                      onClick={openCookieSettings}
                     >
                       Gestisci cookie
                     </button>
@@ -390,10 +407,15 @@ export default function SiteLayout() {
                 <nav className="footer-block" aria-label="Social">
                   <h2>Social</h2>
                   <ul>
-                    {siteConfig.socialLinks.linkedin ? <li><a href={siteConfig.socialLinks.linkedin} target="_blank" rel="noreferrer">LinkedIn</a></li> : null}
-                    {siteConfig.socialLinks.github ? <li><a href={siteConfig.socialLinks.github} target="_blank" rel="noreferrer">GitHub</a></li> : null}
-                    {siteConfig.socialLinks.website ? <li><a href={siteConfig.socialLinks.website} target="_blank" rel="noreferrer">Sito</a></li> : null}
-                    {siteConfig.socialLinks.x ? <li><a href={siteConfig.socialLinks.x} target="_blank" rel="noreferrer">X</a></li> : null}
+                    {/* Genera i link social filtrando quelli con URL configurato */}
+                    {[
+                      { key: "linkedin", label: "LinkedIn" },
+                      { key: "github", label: "GitHub" },
+                      { key: "website", label: "Sito" },
+                      { key: "x", label: "X" },
+                    ].filter((s) => siteConfig.socialLinks[s.key]).map((s) => (
+                      <li key={s.key}><a href={siteConfig.socialLinks[s.key]} target="_blank" rel="noreferrer">{s.label}</a></li>
+                    ))}
                   </ul>
                 </nav>
               )}

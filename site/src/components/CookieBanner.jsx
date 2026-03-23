@@ -19,6 +19,13 @@ const DEFAULT_PREFS = {
   marketing: false,
 };
 
+/** Definizione delle categorie di cookie mostrate nel pannello preferenze. */
+const COOKIE_CATEGORIES = [
+  { key: "necessary", label: "Necessari", description: "Indispensabili per il funzionamento del sito. Sempre attivi.", disabled: true },
+  { key: "analytics", label: "Analytics", description: "Ci aiutano a capire come viene utilizzato il sito per migliorarlo.", disabled: false },
+  { key: "marketing", label: "Marketing", description: "Permettono di mostrare contenuti e annunci pertinenti ai tuoi interessi.", disabled: false },
+];
+
 /** Legge il consenso salvato in localStorage. Ritorna null se non presente. */
 function readConsent() {
   try {
@@ -128,37 +135,20 @@ export default function CookieBanner() {
               <p>Scegli quali categorie di cookie autorizzare. I cookie necessari non possono essere disattivati.</p>
 
               <div className="cookie-prefs">
-                <label className="cookie-pref">
-                  <span className="cookie-pref-info">
-                    <strong>Necessari</strong>
-                    <span>Indispensabili per il funzionamento del sito. Sempre attivi.</span>
-                  </span>
-                  <input type="checkbox" checked disabled />
-                </label>
-
-                <label className="cookie-pref">
-                  <span className="cookie-pref-info">
-                    <strong>Analytics</strong>
-                    <span>Ci aiutano a capire come viene utilizzato il sito per migliorarlo.</span>
-                  </span>
-                  <input
-                    type="checkbox"
-                    checked={prefs.analytics}
-                    onChange={() => togglePref("analytics")}
-                  />
-                </label>
-
-                <label className="cookie-pref">
-                  <span className="cookie-pref-info">
-                    <strong>Marketing</strong>
-                    <span>Permettono di mostrare contenuti e annunci pertinenti ai tuoi interessi.</span>
-                  </span>
-                  <input
-                    type="checkbox"
-                    checked={prefs.marketing}
-                    onChange={() => togglePref("marketing")}
-                  />
-                </label>
+                {COOKIE_CATEGORIES.map((cat) => (
+                  <label key={cat.key} className="cookie-pref">
+                    <span className="cookie-pref-info">
+                      <strong>{cat.label}</strong>
+                      <span>{cat.description}</span>
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={cat.disabled || prefs[cat.key]}
+                      disabled={cat.disabled}
+                      onChange={() => togglePref(cat.key)}
+                    />
+                  </label>
+                ))}
               </div>
             </div>
             <div className="cookie-actions">

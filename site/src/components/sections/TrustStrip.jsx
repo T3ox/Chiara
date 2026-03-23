@@ -12,7 +12,7 @@ import { LANDING_CONTENT } from "../../data/landingContent";
 export default function TrustStrip() {
   // Replica l'array 4 volte per creare il loop visivo del carosello
   const toolsMarquee = useMemo(
-    () => [...LANDING_CONTENT.tools.items, ...LANDING_CONTENT.tools.items, ...LANDING_CONTENT.tools.items, ...LANDING_CONTENT.tools.items],
+    () => Array.from({ length: 4 }, () => LANDING_CONTENT.tools.items).flat(),
     []
   );
 

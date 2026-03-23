@@ -335,8 +335,8 @@ export const LANDING_CONTENT = {
       },
       {
         q: "Quali requisiti di sistema servono?",
-        a: "Windows con .NET installato, Python per il modulo di analisi e accesso a OpenAI secondo le policy aziendali.",
-        tags: ["requisiti", "os", "dotnet"],
+        a: "Windows o macOS con Python disponibile per il modulo di analisi e connettivita di rete per usare il servizio incluso.",
+        tags: ["requisiti", "os", "python"],
       },
     ],
   },
