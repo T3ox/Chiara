@@ -236,9 +236,9 @@ export default function SiteLayout() {
             )}
           </nav>
 
-          {/* Pulsante CTA in alto a destra — sempre "Richiedi demo" */}
+          {/* Pulsante CTA in alto a destra — sempre "Accedi" */}
           <div className="header-right">
-            <Link className="access-btn" to="/demo">Richiedi demo</Link>
+            <Link className="access-btn" to="/accedi">Accedi</Link>
           </div>
 
           {/* Pulsante hamburger per il menu mobile */}
@@ -271,7 +271,7 @@ export default function SiteLayout() {
                   <LandingNavItems activeHref={activeLandingHref} onClick={handleLandingAnchorClick} />
                   <NavLink to="/prezzi" className={({ isActive }) => (isActive ? "active" : "")} onClick={() => setIsMenuOpen(false)}>Prezzi</NavLink>
                   <NavLink to="/demo" className={({ isActive }) => (isActive ? "active" : "")} onClick={() => setIsMenuOpen(false)}>Demo</NavLink>
-                  <Link className="access-btn mobile-demo-btn" to="/demo" onClick={() => setIsMenuOpen(false)}>Richiedi demo</Link>
+                  <Link className="access-btn mobile-demo-btn" to="/accedi" onClick={() => setIsMenuOpen(false)}>Accedi</Link>
                 </>
               ) : (
                 <NavItems onClick={() => setIsMenuOpen(false)} />
