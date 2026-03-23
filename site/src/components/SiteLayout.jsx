@@ -57,6 +57,7 @@ function NavItems({ onClick }) {
       <NavLink to="/prezzi" className={isActive("/prezzi") ? "active" : ""} onClick={onClick}>Prezzi</NavLink>
       <NavLink to="/demo" className={isActive("/demo") ? "active" : ""} onClick={onClick}>Demo</NavLink>
       <NavLink to="/privacy" className={isActive("/privacy") ? "active" : ""} onClick={onClick}>Privacy</NavLink>
+      <NavLink to="/termini" className={isActive("/termini") ? "active" : ""} onClick={onClick}>Termini</NavLink>
     </>
   );
 }
@@ -230,6 +231,7 @@ export default function SiteLayout() {
                 {/* Link alle pagine separate */}
                 <NavLink to="/prezzi" className={({ isActive }) => (isActive ? "active" : "")}>Prezzi</NavLink>
                 <NavLink to="/demo" className={({ isActive }) => (isActive ? "active" : "")}>Demo</NavLink>
+                <NavLink to="/termini" className={({ isActive }) => (isActive ? "active" : "")}>Termini</NavLink>
               </>
             ) : (
               <NavItems />
@@ -271,6 +273,7 @@ export default function SiteLayout() {
                   <LandingNavItems activeHref={activeLandingHref} onClick={handleLandingAnchorClick} />
                   <NavLink to="/prezzi" className={({ isActive }) => (isActive ? "active" : "")} onClick={() => setIsMenuOpen(false)}>Prezzi</NavLink>
                   <NavLink to="/demo" className={({ isActive }) => (isActive ? "active" : "")} onClick={() => setIsMenuOpen(false)}>Demo</NavLink>
+                  <NavLink to="/termini" className={({ isActive }) => (isActive ? "active" : "")} onClick={() => setIsMenuOpen(false)}>Termini</NavLink>
                   <Link className="access-btn mobile-demo-btn" to="/accedi" onClick={() => setIsMenuOpen(false)}>Accedi</Link>
                 </>
               ) : (
