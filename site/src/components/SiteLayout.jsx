@@ -27,6 +27,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { LANDING_CONTENT } from "../data/landingContent";
 import { siteConfig } from "../data/siteConfig";
+import CookieBanner from "./CookieBanner";
 
 /** Normalizza un percorso rimuovendo lo slash finale (tranne "/"). */
 function normalizePath(path) {
@@ -56,6 +57,7 @@ function NavItems({ onClick }) {
       <NavLink to="/" className={isActive("/") ? "active" : ""} onClick={onClick}>Home</NavLink>
       <NavLink to="/prezzi" className={isActive("/prezzi") ? "active" : ""} onClick={onClick}>Prezzi</NavLink>
       <NavLink to="/demo" className={isActive("/demo") ? "active" : ""} onClick={onClick}>Demo</NavLink>
+      <NavLink to="/download" className={isActive("/download") ? "active" : ""} onClick={onClick}>Download</NavLink>
       <NavLink to="/privacy" className={isActive("/privacy") ? "active" : ""} onClick={onClick}>Privacy</NavLink>
       <NavLink to="/termini" className={isActive("/termini") ? "active" : ""} onClick={onClick}>Termini</NavLink>
     </>
@@ -231,6 +233,7 @@ export default function SiteLayout() {
                 {/* Link alle pagine separate */}
                 <NavLink to="/prezzi" className={({ isActive }) => (isActive ? "active" : "")}>Prezzi</NavLink>
                 <NavLink to="/demo" className={({ isActive }) => (isActive ? "active" : "")}>Demo</NavLink>
+                <NavLink to="/download" className={({ isActive }) => (isActive ? "active" : "")}>Download</NavLink>
                 <NavLink to="/termini" className={({ isActive }) => (isActive ? "active" : "")}>Termini</NavLink>
               </>
             ) : (
@@ -273,6 +276,7 @@ export default function SiteLayout() {
                   <LandingNavItems activeHref={activeLandingHref} onClick={handleLandingAnchorClick} />
                   <NavLink to="/prezzi" className={({ isActive }) => (isActive ? "active" : "")} onClick={() => setIsMenuOpen(false)}>Prezzi</NavLink>
                   <NavLink to="/demo" className={({ isActive }) => (isActive ? "active" : "")} onClick={() => setIsMenuOpen(false)}>Demo</NavLink>
+                  <NavLink to="/download" className={({ isActive }) => (isActive ? "active" : "")} onClick={() => setIsMenuOpen(false)}>Download</NavLink>
                   <NavLink to="/termini" className={({ isActive }) => (isActive ? "active" : "")} onClick={() => setIsMenuOpen(false)}>Termini</NavLink>
                   <Link className="access-btn mobile-demo-btn" to="/accedi" onClick={() => setIsMenuOpen(false)}>Accedi</Link>
                 </>
@@ -326,6 +330,15 @@ export default function SiteLayout() {
                   {LANDING_CONTENT.footer.links.map((link) => (
                     <li key={link.href}><a href={link.href}>{link.label}</a></li>
                   ))}
+                  <li>
+                    <button
+                      type="button"
+                      className="cookie-settings-link"
+                      onClick={() => window.dispatchEvent(new CustomEvent("open-cookie-settings"))}
+                    >
+                      Gestisci cookie
+                    </button>
+                  </li>
                 </ul>
               </nav>
             </div>
@@ -361,6 +374,15 @@ export default function SiteLayout() {
                 <ul>
                   <li><Link to="/privacy">Privacy</Link></li>
                   <li><Link to="/termini">Termini</Link></li>
+                  <li>
+                    <button
+                      type="button"
+                      className="cookie-settings-link"
+                      onClick={() => window.dispatchEvent(new CustomEvent("open-cookie-settings"))}
+                    >
+                      Gestisci cookie
+                    </button>
+                  </li>
                 </ul>
               </nav>
 
@@ -382,6 +404,8 @@ export default function SiteLayout() {
           </>
         )}
       </footer>
+
+      <CookieBanner />
     </>
   );
 }
