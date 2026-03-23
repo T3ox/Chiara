@@ -1,4 +1,11 @@
-﻿import { useLocation } from "react-router-dom";
+﻿/**
+ * LoginPage — placeholder per l'area di accesso.
+ *
+ * L'autenticazione non è ancora implementata. La pagina mostra
+ * un messaggio informativo e, se l'utente arriva da /account/*,
+ * visualizza il percorso richiesto per debug.
+ */
+import { useLocation } from "react-router-dom";
 
 export default function LoginPage({ fromAccountPath = false }) {
   const location = useLocation();

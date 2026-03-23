@@ -33,8 +33,8 @@ app.get('/api/user/profile', (req, res) => {
     res.json({
         name:    "Chiara Rossi",
         package: "Pro — 50 GB",
-        gbUsed:  49.5,
-        gbTotal: 50
+        mbUsed:  50688, // 49.5 GB * 1024
+        mbTotal: 51200  // 50 GB * 1024
     });
 });
 

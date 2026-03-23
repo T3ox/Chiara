@@ -1,4 +1,10 @@
-﻿import { useState } from "react";
+﻿/**
+ * Accordion — componente accordion generico.
+ *
+ * Riceve un array di { title, content } e mostra una lista di voci
+ * espandibili. Una sola voce aperta alla volta (click sulla stessa la chiude).
+ */
+import { useState } from "react";
 
 export default function Accordion({ items }) {
   const [openIndex, setOpenIndex] = useState(-1);

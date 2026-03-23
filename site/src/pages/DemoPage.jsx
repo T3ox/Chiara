@@ -1,3 +1,9 @@
+/**
+ * DemoPage — pagina di richiesta demo.
+ *
+ * Spiega cosa include la sessione demo, il formato e offre
+ * un pulsante mailto per prenotare una call.
+ */
 import { Link } from "react-router-dom";
 import { LANDING_CONTENT } from "../data/landingContent";
 

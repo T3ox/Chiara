@@ -1,4 +1,10 @@
-﻿import { Link } from "react-router-dom";
+﻿/**
+ * PricingPage — pagina dei piani e prezzi.
+ *
+ * Mostra due piani (Operativo, Enterprise) con FAQ dedicate
+ * e un callout finale per il contatto commerciale.
+ */
+import { Link } from "react-router-dom";
 import Accordion from "../components/Accordion";
 
 const faqItems = [
