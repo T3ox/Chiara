@@ -12,6 +12,18 @@ const profilePackage = document.getElementById('profilePackage');
 const profileGbFill = document.getElementById('profileGbFill');
 const profileGbLabel = document.getElementById('profileGbLabel');
 const folderSizeWarning = document.getElementById('folderSizeWarning');
+const folderSizeWarningText = document.getElementById('folderSizeWarningText');
+const upgradeBtn = document.getElementById('upgradeBtn');
+
+upgradeBtn.addEventListener('click', (e) => {
+  e.preventDefault();
+  const pricingUrl = 'http://localhost:5173/prezzi';
+  if (window.electronAPI && window.electronAPI.openExternal) {
+    window.electronAPI.openExternal(pricingUrl);
+  } else {
+    window.open(pricingUrl, '_blank');
+  }
+});
 const readProgressContainer = document.getElementById('readProgressContainer');
 const readProgressBar = document.getElementById('readProgressBar');
 const readProgressText = document.getElementById('readProgressText');
@@ -36,7 +48,8 @@ async function setSelection(files) {
 
   // Calculate total size in bytes
   const totalSizeBytes = selectedFiles.reduce((acc, file) => acc + (file.size || 0), 0);
-  const totalSizeGB = totalSizeBytes / (1024 * 1024 * 1024);
+  const totalSizeMB = totalSizeBytes / (1024 * 1024);
+  const totalSizeGB = totalSizeMB / 1024;
 
   const rel = selectedFiles[0].webkitRelativePath || selectedFiles[0].name;
   const folderName = rel.includes('/') ? rel.split('/')[0] : rel;
@@ -49,9 +62,11 @@ async function setSelection(files) {
   }
 
   if (userProfile) {
-    const remainingGB = userProfile.gbTotal - userProfile.gbUsed;
-    if (totalSizeGB > remainingGB) {
-      folderSizeWarning.textContent = `⚠️ Cartella troppo grande (${totalSizeGB.toFixed(2)} GB). Spazio rimanente: ${remainingGB.toFixed(2)} GB.`;
+    const remainingMB = userProfile.mbTotal - userProfile.mbUsed;
+    const remainingGB = remainingMB / 1024;
+    
+    if (totalSizeMB > remainingMB) {
+      folderSizeWarningText.textContent = `⚠️ Cartella troppo grande (${totalSizeGB.toFixed(2)} GB). Spazio rimanente: ${remainingGB.toFixed(2)} GB.`;
       folderSizeWarning.classList.remove('hidden');
       confirmBtn.disabled = true;
     } else {
@@ -229,11 +244,12 @@ function updateProfileUI(data) {
   profileName.textContent = data.name || '—';
   profilePackage.textContent = data.package || '—';
   
-  if (data.gbTotal > 0) {
-    const remaining = data.gbTotal - data.gbUsed;
-    const percentage = (remaining / data.gbTotal) * 100;
+  if (data.mbTotal > 0) {
+    const remainingMB = data.mbTotal - data.mbUsed;
+    const remainingGB = remainingMB / 1024;
+    const percentage = (remainingMB / data.mbTotal) * 100;
     profileGbFill.style.width = `${100 - percentage}%`;
-    profileGbLabel.textContent = `${remaining.toFixed(1)} GB rimanenti`;
+    profileGbLabel.textContent = `${remainingGB.toFixed(1)} GB rimanenti`;
   }
 }
 
@@ -242,7 +258,7 @@ profileClose.addEventListener('click', () => toggleProfileSidebar(false));
 profileOverlay.addEventListener('click', () => toggleProfileSidebar(false));
 
 // --- Update Checker Logic --- //
-const currentVersion = "0.0.0";
+const currentVersion = "0.1.0";
 const versionLabel = document.getElementById('versionLabel');
 versionLabel.textContent = `Version: ${currentVersion}`;
 const updateModal = document.getElementById('updateModal');

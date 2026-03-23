@@ -20,7 +20,7 @@ app.get('/api/version', (req, res) => {
     };
 
     res.json({
-        version: "0.0.1",
+        version: "0.1.0",
         downloadUrl: updates[platform] || updates.win32, // fallback su windows
         checksum: "", 
         releaseNotes: "- Supporto multi-piattaforma per aggiornamenti automatici.\n- Installazione silenziosa su Windows.\n- Miglioramenti alla stabilità dell'estrazione."
@@ -33,8 +33,8 @@ app.get('/api/user/profile', (req, res) => {
     res.json({
         name:    "Chiara Rossi",
         package: "Pro — 50 GB",
-        gbUsed:  49.5,
-        gbTotal: 50
+        mbUsed:  50688, // 49.5 GB * 1024
+        mbTotal: 51200  // 50 GB * 1024
     });
 });
 
