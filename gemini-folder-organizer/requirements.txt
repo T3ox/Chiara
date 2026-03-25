@@ -4,3 +4,4 @@ openpyxl
 pymupdf
 pillow
 python-dotenv
+pydantic
