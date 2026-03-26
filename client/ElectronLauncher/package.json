@@ -1,0 +1,28 @@
+{
+  "name": "electronlauncher",
+  "version": "0.1.0",
+  "main": "index.js",
+  "scripts": {
+    "sync-theme": "node sync-theme-vars.js",
+    "start": "npm run sync-theme && electron .",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:mac": "npm run sync-theme && electron-builder --mac",
+    "build:win": "npm run sync-theme && electron-builder --win",
+    "build": "npm run build:mac"
+  },
+  "keywords": [],
+  "author": "Chiara",
+  "license": "ISC",
+  "description": "Launcher per FolderOrganizer",
+  "build": {
+    "appId": "com.t3ox.folderorganizerlauncher",
+    "productName": "FolderOrganizer Launcher",
+    "win": {
+      "target": ["nsis", "zip"]
+    }
+  },
+  "devDependencies": {
+    "electron": "^40.7.0",
+    "electron-builder": "^26.8.1"
+  }
+}
