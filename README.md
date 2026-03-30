@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> d5aa3e1bd20cc4656de100f5e553c3699a08e105
 ﻿# FolderOrganizer
 
 Repository organizzato in due aree:
@@ -35,3 +39,9 @@ cd desktop/FolderOrganizer.Desktop
 dotnet restore
 dotnet run
 ```
+<<<<<<< HEAD
+=======
+# FolderOrganizer
+>>>>>>> a125d7430386bc510df5cee574266c589f28535a
+=======
+>>>>>>> d5aa3e1bd20cc4656de100f5e553c3699a08e105

@@ -1,0 +1,8 @@
+# FolderOrganizer AI — robots.txt
+
+User-agent: *
+Allow: /
+Disallow: /accedi
+Disallow: /account/
+
+Sitemap: https://www.folderorganizer.com/sitemap.xml

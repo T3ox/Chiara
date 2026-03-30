@@ -1,5 +1,12 @@
-﻿import { Link } from "react-router-dom";
+﻿/**
+ * PricingPage — pagina dei piani e prezzi.
+ *
+ * Mostra due piani (Operativo, Enterprise) con FAQ dedicate
+ * e un callout finale per il contatto commerciale.
+ */
+import { Link } from "react-router-dom";
 import Accordion from "../components/Accordion";
+import usePageMeta from "../hooks/usePageMeta";
 
 const faqItems = [
   {
@@ -17,6 +24,7 @@ const faqItems = [
 ];
 
 export default function PricingPage() {
+  usePageMeta({ title: "Prezzi", description: "Piani e prezzi di FolderOrganizer AI. Proposta su richiesta, costruita sui tuoi processi reali." });
   return (
     <>
       <section className="section shell pricing-hero">

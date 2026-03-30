@@ -1,0 +1,31 @@
+# Cache headers per asset statici
+# Compatibile con Netlify e Cloudflare Pages
+
+# Asset con hash nel nome (JS, CSS generati da Vite): cache 1 anno
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Immagini: cache 1 settimana
+/img/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+# Favicon: cache 1 settimana
+/favicon.svg
+  Cache-Control: public, max-age=604800
+
+# HTML: no cache (sempre fresco per SPA routing)
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Sitemap e robots: cache 1 giorno
+/sitemap.xml
+  Cache-Control: public, max-age=86400
+/robots.txt
+  Cache-Control: public, max-age=86400
+
+# Security headers (bonus Lighthouse)
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
