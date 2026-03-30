@@ -2,26 +2,23 @@
  * SiteLayout.jsx — layout comune a tutte le pagine del sito.
  *
  * Fornisce:
- *  - Header con navigazione desktop e mobile
+ *  - Header minimale con hamburger (sx), logo centrato, e CTA accedi (dx)
+ *  - Drawer laterale a scomparsa da sinistra con navigazione completa
  *  - Footer con info prodotto, contatti, link legali
  *  - <Outlet /> dove React Router renderizza la pagina corrente
  *
  * Comportamento speciale per la homepage ("/"):
  *  - Il logo punta all'ancora #top invece di ricaricare la pagina
- *  - La navbar mostra le sezioni anchor della landing (#perche, #come-funziona, ...)
- *    invece dei link alle pagine
+ *  - Il drawer mostra le sezioni anchor della landing (#perche, #come-funziona, ...)
  *  - Il click sulle ancore fa uno scroll fluido invece di navigare
- *  - Il link attivo nella navbar viene aggiornato in base alla sezione visibile (scroll tracking)
+ *  - Il link attivo nel drawer viene aggiornato in base alla sezione visibile (scroll tracking)
  *  - Il footer mostra contenuto specifico della landing (tagline, note privacy)
  *
- * Menu mobile:
- *  - Si apre con il pulsante hamburger
+ * Drawer:
+ *  - Si apre con il pulsante hamburger (sempre visibile, anche su desktop)
  *  - Si chiude premendo Escape, cliccando fuori dal pannello, o navigando
- *  - Blocca lo scroll del body mentre è aperto (classe CSS "menu-open")
- *
- * Altezza footer:
- *  - Viene misurata e salvata nella variabile CSS --footer-height
- *  - Serve per calcolare il padding del contenuto principale e evitare sovrapposizioni
+ *  - Blocca lo scroll del body mentre e aperto (classe CSS "menu-open")
+ *  - I link sono raggruppati per sezione: Navigazione, Prodotto, Azienda
  */
 import { useEffect, useMemo, useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
@@ -46,62 +43,27 @@ function mapActiveRoute(pathname) {
   return current;
 }
 
-/** Voci di navigazione condivise tra desktop e mobile (pagine interne, non landing). */
-const SITE_NAV_ITEMS = [
+/** Link raggruppati per il drawer laterale */
+const DRAWER_NAV_MAIN = [
   { to: "/", label: "Home" },
   { to: "/prezzi", label: "Prezzi" },
-  { to: "/demo", label: "Demo" },
+  { to: "/demo", label: "Richiedi demo" },
   { to: "/download", label: "Download" },
-  { to: "/privacy", label: "Privacy" },
-  { to: "/termini", label: "Termini" },
 ];
 
-/** Link aggiuntivi mostrati nella navbar della landing (oltre alle sezioni anchor). */
-const LANDING_EXTRA_NAV = [
-  { to: "/prezzi", label: "Prezzi" },
-  { to: "/demo", label: "Demo" },
-  { to: "/download", label: "Download" },
+const DRAWER_NAV_COMPANY = [
+  { to: "/chi-siamo", label: "Chi siamo" },
+  { to: "/contatti", label: "Contatti" },
+  { to: "/changelog", label: "Changelog" },
+];
+
+const DRAWER_NAV_LEGAL = [
+  { to: "/privacy", label: "Privacy" },
   { to: "/termini", label: "Termini" },
 ];
 
 /** Emette l'evento custom per riaprire il banner cookie dal footer. */
 const openCookieSettings = () => window.dispatchEvent(new CustomEvent("open-cookie-settings"));
-
-/** Link di navigazione per le pagine del sito (non la landing). */
-function NavItems({ onClick }) {
-  const location = useLocation();
-  const activePath = mapActiveRoute(location.pathname);
-  const isActive = (path) => normalizePath(path) === normalizePath(activePath);
-
-  return (
-    <>
-      {SITE_NAV_ITEMS.map((item) => (
-        <NavLink key={item.to} to={item.to} className={isActive(item.to) ? "active" : ""} onClick={onClick}>
-          {item.label}
-        </NavLink>
-      ))}
-    </>
-  );
-}
-
-/** Link di navigazione per la landing page — puntano alle sezioni anchor (#perche, ecc.). */
-function LandingNavItems({ activeHref, onClick }) {
-  return (
-    <>
-      {LANDING_CONTENT.nav.map((item) => (
-        <a
-          key={item.href}
-          href={item.href}
-          className={activeHref === item.href ? "active" : ""}
-          data-route={item.href}
-          onClick={(event) => onClick(event, item.href)}
-        >
-          {item.label}
-        </a>
-      ))}
-    </>
-  );
-}
 
 export default function SiteLayout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -114,9 +76,13 @@ export default function SiteLayout() {
 
   const location = useLocation();
   const isLanding = normalizePath(location.pathname) === "/";
+  const activePath = mapActiveRoute(location.pathname);
   const year = useMemo(() => new Date().getFullYear(), []);
 
-  // Chiude il menu mobile ad ogni cambio di pagina
+  const isActive = (path) => normalizePath(path) === normalizePath(activePath);
+  const closeMenu = () => setIsMenuOpen(false);
+
+  // Chiude il drawer ad ogni cambio di pagina
   useEffect(() => {
     setIsMenuOpen(false);
   }, [location.pathname]);
@@ -128,7 +94,6 @@ export default function SiteLayout() {
   }, [isMenuOpen]);
 
   // Aggiunge la classe "is-scrolled" all'header dopo 10px di scroll
-  // (attiva ombre e sfondo opaco per leggibilità)
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 10);
     onScroll();
@@ -136,8 +101,7 @@ export default function SiteLayout() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Scroll tracking: aggiorna il link attivo nella navbar della landing
-  // in base alla sezione anchor visibile in quel momento
+  // Scroll tracking: aggiorna il link attivo nel drawer della landing
   useEffect(() => {
     if (!isLanding) return;
 
@@ -150,13 +114,11 @@ export default function SiteLayout() {
     const updateFromScroll = () => {
       const header = document.querySelector(".site-header");
       const headerOffset = (header ? header.offsetHeight : 74) + 10;
-      const markerLine = headerOffset;
 
       let currentHref = sections[0].href;
       sections.forEach((entry) => {
         const rect = entry.node.getBoundingClientRect();
-        // La sezione è attiva se la sua area copre la riga di riferimento (header + 10px)
-        if (rect.top <= markerLine && rect.bottom > markerLine) {
+        if (rect.top <= headerOffset && rect.bottom > headerOffset) {
           currentHref = entry.href;
         }
       });
@@ -173,7 +135,7 @@ export default function SiteLayout() {
     };
   }, [isLanding]);
 
-  // Chiusura menu mobile con Escape o click fuori dal pannello
+  // Chiusura drawer con Escape o click fuori dal pannello
   useEffect(() => {
     const onEscape = (event) => {
       if (event.key === "Escape") setIsMenuOpen(false);
@@ -181,7 +143,7 @@ export default function SiteLayout() {
 
     const onOutsideClick = (event) => {
       if (!isMenuOpen) return;
-      const panel = document.querySelector(".mobile-panel");
+      const panel = document.querySelector(".drawer-panel");
       const toggle = document.querySelector(".menu-toggle");
       if (!panel || !toggle) return;
       if (!panel.contains(event.target) && !toggle.contains(event.target)) {
@@ -199,8 +161,7 @@ export default function SiteLayout() {
 
   /**
    * Gestisce il click su un link anchor della landing.
-   * Esegue uno scroll fluido verso la sezione invece di navigare (evita il ricaricamento).
-   * Rispetta la preferenza "prefers-reduced-motion".
+   * Esegue uno scroll fluido verso la sezione invece di navigare.
    */
   const handleLandingAnchorClick = (event, href) => {
     if (!isLanding) return;
@@ -212,22 +173,52 @@ export default function SiteLayout() {
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     target.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
 
-    // Aggiorna l'URL senza ricaricare la pagina
     if (window.history?.replaceState) {
       window.history.replaceState(null, "", href);
     }
     setIsMenuOpen(false);
   };
 
+  /** Renderizza un gruppo di link nel drawer */
+  const renderDrawerGroup = (label, items) => (
+    <div className="drawer-group">
+      <span className="drawer-group-label">{label}</span>
+      {items.map((item) => (
+        <NavLink
+          key={item.to}
+          to={item.to}
+          className={`drawer-link${isActive(item.to) ? " active" : ""}`}
+          onClick={closeMenu}
+        >
+          {item.label}
+        </NavLink>
+      ))}
+    </div>
+  );
+
   return (
     <>
-      {/* Link di salto per accessibilità: bypassa la navigazione e va al contenuto */}
+      {/* Link di salto per accessibilita */}
       <a className="skip-link" href="#main-content">Vai al contenuto</a>
 
       {/* === HEADER === */}
       <header className={`site-header${isScrolled ? " is-scrolled" : ""}`} id="top">
         <div className="shell nav-shell">
-          {/* Logo: ancora #top sulla landing, link alla home sulle altre pagine */}
+          {/* Hamburger — sempre visibile */}
+          <button
+            type="button"
+            className="menu-toggle"
+            aria-label={isMenuOpen ? "Chiudi menu" : "Apri menu"}
+            aria-expanded={isMenuOpen}
+            aria-controls="drawer-menu"
+            onClick={() => setIsMenuOpen((prev) => !prev)}
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+
+          {/* Logo centrato */}
           {isLanding ? (
             <a
               className="logo"
@@ -243,67 +234,69 @@ export default function SiteLayout() {
             </Link>
           )}
 
-          {/* Navigazione desktop */}
-          <nav className="site-nav desktop-nav" aria-label="Navigazione principale">
-            {isLanding ? (
-              <>
-                {/* Sezioni anchor della landing */}
-                <LandingNavItems activeHref={activeLandingHref} onClick={handleLandingAnchorClick} />
-                {/* Link alle pagine separate */}
-                {LANDING_EXTRA_NAV.map((item) => (
-                  <NavLink key={item.to} to={item.to} className={({ isActive }) => (isActive ? "active" : "")}>{item.label}</NavLink>
-                ))}
-              </>
-            ) : (
-              <NavItems />
-            )}
-          </nav>
-
-          {/* Pulsante CTA in alto a destra — sempre "Accedi" */}
+          {/* CTA a destra */}
           <div className="header-right">
-            <Link className="access-btn" to="/accedi">Accedi</Link>
+            <Link className="access-btn access-btn--outline" to="/accedi">Accedi</Link>
+            <Link className="access-btn access-btn--solid" to="/registrati">Registrati</Link>
           </div>
-
-          {/* Pulsante hamburger per il menu mobile */}
-          <button
-            type="button"
-            className="menu-toggle"
-            aria-label={isMenuOpen ? "Chiudi menu" : "Apri menu"}
-            aria-expanded={isMenuOpen}
-            aria-controls="mobile-menu"
-            onClick={() => setIsMenuOpen((prev) => !prev)}
-          >
-            <span></span>
-            <span></span>
-            <span></span>
-          </button>
-        </div>
-
-        {/* === MENU MOBILE === */}
-        <div
-          className={`mobile-menu-shell${isMenuOpen ? " open" : ""}`}
-          id="mobile-menu"
-          aria-hidden={!isMenuOpen}
-        >
-          {/* Sfondo scuro cliccabile per chiudere il menu */}
-          <div className="mobile-backdrop" data-menu-backdrop onClick={() => setIsMenuOpen(false)}></div>
-          <aside className="mobile-panel" role="dialog" aria-modal="true" aria-label="Menu principale">
-            <nav className="site-nav mobile-nav" aria-label="Navigazione mobile">
-              {isLanding ? (
-                <>
-                  <LandingNavItems activeHref={activeLandingHref} onClick={handleLandingAnchorClick} />
-                  {LANDING_EXTRA_NAV.map((item) => (
-                    <NavLink key={item.to} to={item.to} className={({ isActive }) => (isActive ? "active" : "")} onClick={() => setIsMenuOpen(false)}>{item.label}</NavLink>
-                  ))}
-                  <Link className="access-btn mobile-demo-btn" to="/accedi" onClick={() => setIsMenuOpen(false)}>Accedi</Link>
-                </>
-              ) : (
-                <NavItems onClick={() => setIsMenuOpen(false)} />
-              )}
-            </nav>
-          </aside>
         </div>
       </header>
+
+      {/* === DRAWER LATERALE === */}
+      <div
+        className={`drawer-shell${isMenuOpen ? " open" : ""}`}
+        id="drawer-menu"
+        aria-hidden={!isMenuOpen}
+      >
+        <div className="drawer-backdrop" onClick={closeMenu}></div>
+        <aside className="drawer-panel" role="dialog" aria-modal="true" aria-label="Menu principale">
+          {/* Pulsante chiudi dentro il drawer */}
+          <button
+            type="button"
+            className="drawer-close"
+            aria-label="Chiudi menu"
+            onClick={closeMenu}
+          >
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <line x1="4" y1="4" x2="16" y2="16" />
+              <line x1="16" y1="4" x2="4" y2="16" />
+            </svg>
+          </button>
+
+          <nav className="drawer-nav" aria-label="Navigazione principale">
+            {/* Sezioni della landing (solo sulla homepage) */}
+            {isLanding && (
+              <div className="drawer-group">
+                <span className="drawer-group-label">In questa pagina</span>
+                {LANDING_CONTENT.nav.map((item) => (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    className={`drawer-link${activeLandingHref === item.href ? " active" : ""}`}
+                    onClick={(event) => handleLandingAnchorClick(event, item.href)}
+                  >
+                    {item.label}
+                  </a>
+                ))}
+              </div>
+            )}
+
+            {renderDrawerGroup("Prodotto", DRAWER_NAV_MAIN)}
+            {renderDrawerGroup("Azienda", DRAWER_NAV_COMPANY)}
+            {renderDrawerGroup("Legal", DRAWER_NAV_LEGAL)}
+          </nav>
+
+          {/* CTA nel drawer */}
+          <div className="drawer-footer">
+            <Link className="btn btn-outline drawer-cta" to="/accedi" onClick={closeMenu}>
+              Accedi
+            </Link>
+            <Link className="btn btn-solid drawer-cta" to="/registrati" onClick={closeMenu}>
+              Registrati
+            </Link>
+          </div>
+        </aside>
+      </div>
 
       {/* === CONTENUTO PRINCIPALE === */}
       <main id="main-content" className="site-main">
@@ -347,6 +340,11 @@ export default function SiteLayout() {
                   {LANDING_CONTENT.footer.links.map((link) => (
                     <li key={link.href}><a href={link.href}>{link.label}</a></li>
                   ))}
+                  <li><Link to="/chi-siamo">Chi siamo</Link></li>
+                  <li><Link to="/contatti">Contatti</Link></li>
+                  <li><Link to="/changelog">Changelog</Link></li>
+                  <li><Link to="/privacy">Privacy</Link></li>
+                  <li><Link to="/termini">Termini</Link></li>
                   <li>
                     <button
                       type="button"

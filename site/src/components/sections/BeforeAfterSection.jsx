@@ -9,8 +9,12 @@
  *
  * L'utente può cliccare i pulsanti "Prima" / "Dopo" per vedere la differenza.
  * Le cartelle nello stato "Dopo" possono essere aperte/chiuse.
+ *
+ * Auto-play: dopo 4 secondi di inattivita nella vista "Prima", passa
+ * automaticamente alla vista "Dopo" per mostrare il risultato. Il timer
+ * si resetta ad ogni interazione dell'utente.
  */
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LANDING_CONTENT } from "../../data/landingContent";
 import { getExtension, getIconPath, getTypeLabel } from "../../utils/fileUtils";
 
@@ -20,6 +24,10 @@ export default function BeforeAfterSection() {
 
   // Stato di apertura di ogni cartella nella vista "dopo" — { percorsoCartella: boolean }
   const [openFolders, setOpenFolders] = useState({});
+
+  // Conta quante volte l'utente ha switchato per disabilitare auto-play dopo interazione
+  const userInteracted = useRef(false);
+  const autoPlayTimer = useRef(null);
 
   // Raggruppa i file della vista "dopo" per cartella di destinazione
   const groupedAfter = useMemo(() => {
@@ -47,7 +55,8 @@ export default function BeforeAfterSection() {
   };
 
   // Switch vista con auto-apertura della prima cartella nel "Dopo"
-  const switchToAfter = useCallback(() => {
+  const switchToAfter = useCallback((fromUser = true) => {
+    if (fromUser) userInteracted.current = true;
     setIsAfterState(true);
     // Apre automaticamente la prima cartella per mostrare subito il risultato
     if (groupedAfter.length > 0) {
@@ -59,6 +68,21 @@ export default function BeforeAfterSection() {
     }
   }, [groupedAfter]);
 
+  // Auto-play: dopo 4s nella vista "Prima", mostra il "Dopo" automaticamente
+  useEffect(() => {
+    if (isAfterState || userInteracted.current) return;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reducedMotion) return;
+
+    autoPlayTimer.current = window.setTimeout(() => {
+      switchToAfter(false);
+    }, 4000);
+
+    return () => {
+      if (autoPlayTimer.current) window.clearTimeout(autoPlayTimer.current);
+    };
+  }, [isAfterState, switchToAfter]);
+
   // Calcolo dimensione totale simulata per la status bar
   const totalSize = useMemo(() => {
     const items = isAfterState
@@ -69,7 +93,7 @@ export default function BeforeAfterSection() {
   }, [isAfterState]);
 
   return (
-    <section className="section section-alt">
+    <section id="before-after" className="section section-alt">
       <div className="band-inner">
         {/* Intestazione */}
         <div className="section-head reveal-on-scroll">
@@ -104,7 +128,7 @@ export default function BeforeAfterSection() {
                     role="tab"
                     aria-selected={!isAfterState}
                     aria-controls="compare-stage"
-                    onClick={() => setIsAfterState(false)}
+                    onClick={() => { userInteracted.current = true; setIsAfterState(false); }}
                   >
                     Prima
                     <span className="toggle-badge">{beforeCount} file</span>
@@ -115,7 +139,7 @@ export default function BeforeAfterSection() {
                     role="tab"
                     aria-selected={isAfterState}
                     aria-controls="compare-stage"
-                    onClick={switchToAfter}
+                    onClick={() => switchToAfter(true)}
                   >
                     Dopo
                     <span className="toggle-badge">{afterFolderCount} cartelle</span>

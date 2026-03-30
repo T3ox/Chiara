@@ -6,28 +6,38 @@
  *  2. Attiva il sistema di animazioni scroll-reveal globale (useRevealOnScroll)
  *
  * Struttura delle route:
- *  /            → HomePage      (landing page principale)
- *  /prezzi      → PricingPage   (piani e prezzi)
- *  /demo        → DemoPage      (richiesta demo)
- *  /privacy     → PrivacyPage   (informativa privacy)
- *  /accedi      → LoginPage     (placeholder login)
- *  /termini     → TermsPage     (termini di servizio)
- *  /download    → DownloadPage  (download software .NET)
- *  /account/*   → LoginPage     (reindirizza all'accesso)
- *  *            → /             (redirect per URL sconosciuti)
+ *  /            → HomePage        (landing page principale)
+ *  /prezzi      → PricingPage     (piani e prezzi)
+ *  /demo        → DemoPage        (richiesta demo)
+ *  /privacy     → PrivacyPage     (informativa privacy)
+ *  /accedi      → LoginPage       (area di accesso)
+ *  /termini     → TermsPage       (termini di servizio)
+ *  /download    → DownloadPage    (download software)
+ *  /chi-siamo   → AboutPage       (chi siamo)
+ *  /contatti    → ContactPage     (form contatti)
+ *  /changelog   → ChangelogPage   (storico release)
+ *  /account/*   → LoginPage       (reindirizza all'accesso)
+ *  *            → /               (redirect per URL sconosciuti)
  *
+ * Le pagine secondarie sono caricate con React.lazy per ridurre il bundle iniziale.
  * Tutte le route sono avvolte da SiteLayout che fornisce header e footer.
  */
-import { useEffect } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import SiteLayout from "./components/SiteLayout";
 import HomePage from "./pages/HomePage";
-import PricingPage from "./pages/PricingPage";
-import DemoPage from "./pages/DemoPage";
-import PrivacyPage from "./pages/PrivacyPage";
-import LoginPage from "./pages/LoginPage";
-import TermsPage from "./pages/TermsPage";
-import DownloadPage from "./pages/DownloadPage";
+
+// Lazy-loaded pages — caricate on-demand per ridurre il bundle iniziale
+const PricingPage = lazy(() => import("./pages/PricingPage"));
+const DemoPage = lazy(() => import("./pages/DemoPage"));
+const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
+const LoginPage = lazy(() => import("./pages/LoginPage"));
+const TermsPage = lazy(() => import("./pages/TermsPage"));
+const DownloadPage = lazy(() => import("./pages/DownloadPage"));
+const AboutPage = lazy(() => import("./pages/AboutPage"));
+const ContactPage = lazy(() => import("./pages/ContactPage"));
+const ChangelogPage = lazy(() => import("./pages/ChangelogPage"));
+const RegisterPage = lazy(() => import("./pages/RegisterPage"));
 
 /**
  * Hook che attiva le animazioni di "reveal" quando gli elementi entrano nel viewport.
@@ -103,22 +113,37 @@ function useRevealOnScroll() {
   }, [location.pathname]);
 }
 
+/** Fallback minimale per il caricamento delle pagine lazy */
+function PageLoader() {
+  return (
+    <div className="page-loader" aria-busy="true" aria-label="Caricamento pagina">
+      <div className="page-loader-spinner" />
+    </div>
+  );
+}
+
 export default function App() {
   useRevealOnScroll();
 
   return (
-    <Routes>
-      <Route element={<SiteLayout />}>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/prezzi" element={<PricingPage />} />
-        <Route path="/demo" element={<DemoPage />} />
-        <Route path="/privacy" element={<PrivacyPage />} />
-        <Route path="/accedi" element={<LoginPage />} />
-        <Route path="/termini" element={<TermsPage />} />
-        <Route path="/download" element={<DownloadPage />} />
-        <Route path="/account/*" element={<LoginPage fromAccountPath />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Route>
-    </Routes>
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
+        <Route element={<SiteLayout />}>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/prezzi" element={<PricingPage />} />
+          <Route path="/demo" element={<DemoPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/accedi" element={<LoginPage />} />
+          <Route path="/termini" element={<TermsPage />} />
+          <Route path="/download" element={<DownloadPage />} />
+          <Route path="/chi-siamo" element={<AboutPage />} />
+          <Route path="/contatti" element={<ContactPage />} />
+          <Route path="/changelog" element={<ChangelogPage />} />
+          <Route path="/registrati" element={<RegisterPage />} />
+          <Route path="/account/*" element={<LoginPage fromAccountPath />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
+      </Routes>
+    </Suspense>
   );
 }

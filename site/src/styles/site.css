@@ -121,6 +121,7 @@ a {
 
 /* === HEADER ===
    Sticky in cima alla pagina con sfondo semi-trasparente e blur.
+   Layout: hamburger (sx) | logo (centro) | accedi (dx)
    La classe .is-scrolled viene aggiunta via JS dopo 10px di scroll. */
 .site-header {
   position: sticky;
@@ -154,75 +155,29 @@ a {
 }
 
 .nav-shell {
-  min-height: 74px;
-  display: grid;
-  grid-template-columns: minmax(190px, auto) 1fr minmax(190px, auto);
+  min-height: 64px;
+  position: relative;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 22px;
+  gap: 16px;
 }
 
 .logo {
   text-decoration: none;
   color: var(--accent);
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 700;
   letter-spacing: 0.02em;
-  flex-shrink: 0;
-}
-
-.site-nav {
-  display: flex;
-  gap: 14px;
-  align-items: center;
-}
-
-.desktop-nav {
-  width: 100%;
-  justify-self: center;
-  justify-content: center;
-  margin-inline: auto;
-}
-
-.site-nav a {
-  position: relative;
-  color: var(--muted);
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 580;
-  padding: 6px 2px;
-  transition: color var(--duration-fast) var(--ease-standard);
-}
-
-.site-nav a::after {
-  content: "";
+  white-space: nowrap;
   position: absolute;
-  left: 0;
-  bottom: -5px;
-  width: 100%;
-  height: 2px;
-  border-radius: 999px;
-  background: var(--accent);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform var(--duration-base) var(--ease-standard);
+  left: 50%;
+  transform: translateX(-50%);
 }
 
-.site-nav a:hover,
-.site-nav a.active {
-  color: var(--accent);
-}
-
-.site-nav a.active {
-  font-weight: 640;
-}
-
-.site-nav a:hover::after,
-.site-nav a.active::after {
-  transform: scaleX(1);
-}
-
+/* Hamburger — sempre visibile */
 .menu-toggle {
-  display: none;
+  display: inline-flex;
   border: 1px solid var(--line);
   background: var(--surface);
   width: 42px;
@@ -233,6 +188,14 @@ a {
   gap: 4px;
   flex-direction: column;
   cursor: pointer;
+  justify-self: start;
+  transition: background-color var(--duration-fast) var(--ease-standard),
+              border-color var(--duration-fast) var(--ease-standard);
+}
+
+.menu-toggle:hover {
+  background: var(--surface-alt);
+  border-color: var(--line-strong);
 }
 
 .menu-toggle span {
@@ -240,10 +203,136 @@ a {
   height: 2px;
   border-radius: 999px;
   background: var(--ink);
+  transition: transform var(--duration-base) var(--ease-standard),
+              opacity var(--duration-fast) var(--ease-standard);
 }
 
-.mobile-menu-shell {
-  display: none;
+/* === DRAWER LATERALE ===
+   Pannello a scomparsa da sinistra, usato sia su desktop che mobile.
+   Contiene la navigazione completa raggruppata per sezione. */
+.drawer-shell {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--duration-base) var(--ease-standard);
+}
+
+.drawer-shell.open {
+  pointer-events: auto;
+  opacity: 1;
+}
+
+.drawer-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 28, 43, 0.34);
+}
+
+.drawer-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: min(320px, 85vw);
+  height: 100dvh;
+  background: var(--surface);
+  border-right: 1px solid var(--line);
+  box-shadow: var(--shadow-lg);
+  transform: translateX(-100%);
+  transition: transform var(--duration-slow) var(--ease-standard);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.drawer-shell.open .drawer-panel {
+  transform: translateX(0);
+}
+
+.drawer-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+  color: var(--muted);
+  transition: color var(--duration-fast) var(--ease-standard),
+              background-color var(--duration-fast) var(--ease-standard);
+}
+
+.drawer-close:hover {
+  color: var(--ink);
+  background: var(--surface-alt);
+}
+
+/* Gruppi nel drawer */
+.drawer-nav {
+  flex: 1;
+  padding-top: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.drawer-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 16px;
+}
+
+.drawer-group-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  color: var(--muted);
+  padding: 8px 12px 6px;
+}
+
+.drawer-link {
+  display: block;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+  transition: background-color var(--duration-fast) var(--ease-standard),
+              color var(--duration-fast) var(--ease-standard);
+}
+
+.drawer-link:hover {
+  background: color-mix(in srgb, var(--primary) 6%, var(--surface));
+}
+
+.drawer-link.active {
+  background: color-mix(in srgb, var(--primary) 10%, var(--surface));
+  color: var(--primary);
+  font-weight: 620;
+}
+
+.drawer-footer {
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.drawer-cta {
+  width: 100%;
+  text-align: center;
 }
 
 .site-main {
@@ -499,12 +588,22 @@ p {
   border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
 }
 
+/* Variante solid per il bottone Registrati nell'header */
+.access-btn--solid {
+  background: linear-gradient(120deg, var(--primary) 0%, var(--primary-strong) 100%);
+  color: var(--primary-ink);
+  border-color: transparent;
+}
+
+.access-btn--solid:hover {
+  box-shadow: 0 10px 20px color-mix(in srgb, var(--primary) 28%, transparent);
+}
+
 .header-right {
   justify-self: end;
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-shrink: 0;
 }
 
 .btn-outline {
@@ -1205,23 +1304,13 @@ p {
 }
 
 /* La sezione pilastri ha uno sfondo più scuro e prominente per distinguersi */
+/* === SEZIONE PILASTRI — TRE CARD CON HOVER LIFT === */
+
 .pillars-section {
   position: relative;
-  --pillars-accent: var(--primary);
-  --pillars-accent-soft: color-mix(in srgb, var(--accent) 22%, var(--surface-alt));
-  background: color-mix(in srgb, var(--primary) 10%, var(--surface-alt));
-  border-top: 1px solid color-mix(in srgb, var(--primary) 18%, var(--line));
-  border-bottom: 1px solid color-mix(in srgb, var(--primary) 18%, var(--line));
-}
-
-.pillars-section::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 20% 20%, color-mix(in srgb, var(--pillars-accent) 12%, transparent), transparent 55%);
-  opacity: 0.8;
-  pointer-events: none;
-  z-index: -1;
+  background: color-mix(in srgb, var(--primary) 6%, var(--bg));
+  border-top: 1px solid color-mix(in srgb, var(--primary) 14%, var(--line));
+  border-bottom: 1px solid color-mix(in srgb, var(--primary) 14%, var(--line));
 }
 
 .pillars-head {
@@ -1230,118 +1319,80 @@ p {
   margin-right: auto;
 }
 
-.pillars-nav {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin: 16px 0 28px;
-}
-
-.pillars-arrow {
-  width: 38px;
-  height: 38px;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--pillars-accent) 35%, var(--line));
-  background: var(--surface);
-  color: var(--pillars-accent);
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: transform var(--duration-fast) var(--ease-standard), box-shadow var(--duration-base) var(--ease-standard), background-color var(--duration-base) var(--ease-standard);
-}
-
-.pillars-arrow:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
-}
-
-.pillars-dots {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.pillars-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  background: var(--surface);
-  cursor: pointer;
-  transition: transform var(--duration-fast) var(--ease-standard), background-color var(--duration-base) var(--ease-standard), border-color var(--duration-base) var(--ease-standard);
-}
-
-.pillars-dot.is-active {
-  background: var(--pillars-accent);
-  border-color: var(--pillars-accent);
-  transform: scale(1.1);
-}
-
+/* Griglia a 3 colonne */
 .pillars-grid {
   display: grid;
-  gap: 18px;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr) minmax(0, 1fr);
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
   align-items: stretch;
 }
+
+/* --- Card pilastro --- */
 
 .pillar-card {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  min-height: 260px;
+  gap: 14px;
+  padding: 32px 28px;
+  border-color: var(--line);
+  transition: transform 360ms var(--ease-standard),
+              box-shadow 360ms var(--ease-standard),
+              border-color 360ms var(--ease-standard),
+              opacity 300ms var(--ease-standard);
 }
 
-.pillar-card--side {
-  align-self: center;
+/* Quando si passa sopra la griglia, tutte le card si attenuano... */
+.pillars-grid:hover .pillar-card {
+  opacity: 0.55;
 }
 
-/* La card centrale del carosello pilastri è più grande e visivamente prominente */
-.pillar-card--main {
-  min-height: 380px;
-  background: var(--pillars-accent-soft);
-  border-color: color-mix(in srgb, var(--pillars-accent) 40%, var(--line));
-  border-top: 3px solid var(--pillars-accent);
+/* ...tranne quella sotto il cursore, che si solleva in primo piano */
+.pillars-grid .pillar-card:hover {
+  opacity: 1;
+  transform: translateY(-8px) scale(1.02);
   box-shadow: var(--shadow-lg);
-  transform: translateY(-4px); /* leggermente sollevata rispetto alle card laterali */
+  border-color: color-mix(in srgb, var(--primary) 40%, var(--line));
+  z-index: 2;
 }
 
-/* === ANIMAZIONI CAROSELLO PILASTRI === */
-
-/* La card centrale scivola da destra quando si naviga in avanti */
-@keyframes pillarSlideFromRight {
-  from { opacity: 0; transform: translateX(52px) translateY(-4px); }
-  to   { opacity: 1; transform: translateX(0)    translateY(-4px); }
+/* Numero step */
+.pillar-step {
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+  color: var(--muted);
 }
 
-/* La card centrale scivola da sinistra quando si naviga indietro */
-@keyframes pillarSlideFromLeft {
-  from { opacity: 0; transform: translateX(-52px) translateY(-4px); }
-  to   { opacity: 1; transform: translateX(0)     translateY(-4px); }
+/* Cerchio icona */
+.pillar-icon-ring {
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--primary) 8%, var(--surface));
+  border: 1.5px solid color-mix(in srgb, var(--primary) 22%, var(--line));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background-color 360ms var(--ease-standard),
+              border-color 360ms var(--ease-standard);
 }
 
-/* Le card laterali appaiono con una leggera risalita */
-@keyframes pillarSideFadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.pillar-card--main[data-dir="next"] {
-  animation: pillarSlideFromRight 300ms var(--ease-standard) both;
-}
-
-.pillar-card--main[data-dir="prev"] {
-  animation: pillarSlideFromLeft 300ms var(--ease-standard) both;
-}
-
-.pillar-card--anim-side {
-  animation: pillarSideFadeIn 260ms var(--ease-standard) both;
+.pillars-grid .pillar-card:hover .pillar-icon-ring {
+  background: var(--primary);
+  border-color: var(--primary);
 }
 
 .pillar-icon {
-  width: 46px;
-  height: 46px;
-  color: var(--pillars-accent);
+  width: 28px;
+  height: 28px;
+  color: var(--primary);
+  transition: color 360ms var(--ease-standard);
+}
+
+.pillars-grid .pillar-card:hover .pillar-icon {
+  color: var(--primary-ink);
 }
 
 .pillar-icon path,
@@ -1359,50 +1410,86 @@ p {
   stroke: none;
 }
 
-.pillar-tagline {
+/* Nome pilastro */
+.pillar-name {
   margin: 0;
-  font-size: 12px;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-weight: 700;
-  color: var(--muted);
+  color: var(--primary);
 }
 
+/* Tagline */
+.pillar-tagline {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* Summary */
+.pillar-summary {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink);
+}
+
+/* Dettagli */
 .pillar-details {
   display: grid;
   gap: 12px;
-  margin-top: 8px;
+  margin-top: 4px;
 }
 
-.pillar-details h4 {
-  margin: 0 0 4px;
-  font-size: 15px;
-  color: var(--pillars-accent);
+.pillar-detail {
+  padding-left: 14px;
+  border-left: 3px solid color-mix(in srgb, var(--primary) 25%, var(--line));
+  transition: border-color 360ms var(--ease-standard);
 }
 
-.pillar-details p {
+.pillars-grid .pillar-card:hover .pillar-detail {
+  border-left-color: var(--primary);
+}
+
+.pillar-detail h4 {
+  margin: 0 0 3px;
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--primary);
+}
+
+.pillar-detail p {
   margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
   color: var(--muted);
 }
 
-.pillars-link {
+/* CTA link */
+.pillar-cta {
   margin-top: auto;
   align-self: flex-start;
-  border: 1px solid color-mix(in srgb, var(--pillars-accent) 45%, var(--line));
-  border-radius: 10px;
-  padding: 8px 12px;
+  display: inline-block;
+  padding: 8px 16px;
+  border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--line));
+  border-radius: var(--radius-sm);
   font-size: 13px;
   font-weight: 650;
   text-decoration: none;
-  color: var(--pillars-accent);
-  background: color-mix(in srgb, var(--pillars-accent) 8%, var(--surface));
-  transition: transform var(--duration-fast) var(--ease-standard), box-shadow var(--duration-base) var(--ease-standard), border-color var(--duration-base) var(--ease-standard);
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 6%, var(--surface));
+  transition: background-color 260ms var(--ease-standard),
+              color 260ms var(--ease-standard),
+              border-color 260ms var(--ease-standard);
 }
 
-.pillars-link:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
-  border-color: color-mix(in srgb, var(--pillars-accent) 65%, var(--line));
+.pillars-grid .pillar-card:hover .pillar-cta {
+  background: var(--primary);
+  color: var(--primary-ink);
+  border-color: var(--primary);
 }
 
 #come-funziona .section-head {
@@ -1879,87 +1966,36 @@ button:focus-visible {
   }
 
   .nav-shell {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     gap: 14px;
   }
 
   .logo {
-    justify-self: auto;
-    margin: 0;
-    font-size: 30px;
+    font-size: 18px;
   }
 
-  .desktop-nav {
+  .header-right .access-btn {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+
+  /* Su mobile nasconde "Accedi" testo e mostra solo "Registrati" */
+  .header-right .access-btn--outline {
     display: none;
   }
 
-  .header-right {
-    display: none;
+  /* Pilastri: 1 colonna su tablet/mobile */
+  .pillars-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
   }
 
-  .menu-toggle {
-    display: inline-flex;
-    margin-left: auto;
-  }
-
-  .mobile-menu-shell {
-    display: block;
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 200ms ease;
-    z-index: 95;
-  }
-
-  .mobile-menu-shell.open {
-    pointer-events: auto;
+  /* Su touch non c'è hover, mostra tutte le card normalmente */
+  .pillars-grid:hover .pillar-card {
     opacity: 1;
   }
 
-  .mobile-backdrop {
-    position: absolute;
-    inset: 0;
-    background: rgba(15, 28, 43, 0.34);
-  }
-
-  .mobile-panel {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: min(82vw, 360px);
-    height: 100dvh;
-    background: var(--surface);
-    border-left: 1px solid var(--line);
-    box-shadow: var(--shadow-md);
-    transform: translateX(100%);
-    transition: transform 220ms ease;
-    padding: 80px 20px 20px;
-  }
-
-  .mobile-menu-shell.open .mobile-panel {
-    transform: translateX(0);
-  }
-
-  .mobile-nav {
-    display: grid;
-    gap: 10px;
-  }
-
-  .mobile-nav a {
-    padding: 10px 12px;
-    border-radius: 10px;
-  }
-
-  .mobile-nav a::after {
-    display: none;
-  }
-
-  .mobile-nav a.active {
-    background: color-mix(in srgb, var(--primary) 10%, var(--surface));
-    color: var(--ink);
+  .pillar-card {
+    padding: 24px 20px;
   }
 
   body.after-hero .site-main {
@@ -2829,17 +2865,6 @@ button:focus-visible {
     min-height: auto;
   }
 
-  .pillars-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .pillar-card--side {
-    order: 2;
-  }
-
-  .pillar-card--main {
-    order: 1;
-  }
 
   .kpi-grid {
     grid-template-columns: 1fr;
@@ -3396,5 +3421,291 @@ button:focus-visible {
   .download-meta {
     flex-direction: column;
     gap: var(--space-xs);
+  }
+}
+
+/* === PAGE LOADER (Suspense fallback) === */
+.page-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40vh;
+  padding: 60px 0;
+}
+
+.page-loader-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--line);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* === FORM GENERICI (Contact, Demo, Login) === */
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 13px;
+  font-weight: 620;
+  color: var(--ink);
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.5;
+  transition: border-color var(--duration-fast) var(--ease-standard),
+              box-shadow var(--duration-fast) var(--ease-standard);
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+.form-field input:disabled,
+.form-field select:disabled,
+.form-field textarea:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.form-field input::placeholder,
+.form-field textarea::placeholder {
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+.form-field select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%233a4248' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+
+.form-field textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.contact-success {
+  padding: 20px 0;
+}
+
+.contact-success h3 {
+  color: var(--accent);
+}
+
+/* === CONTACT PAGE === */
+.contact-grid {
+  align-items: start;
+}
+
+.contact-info-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.contact-details li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.contact-details strong {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+/* === LOGIN PAGE === */
+.login-coming-soon {
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.login-form {
+  opacity: 0.7;
+}
+
+/* === DEMO PAGE — Step numbers === */
+.demo-step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--primary-ink);
+  font-weight: 700;
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+.demo-steps-grid {
+  margin-bottom: 24px;
+}
+
+/* === ABOUT PAGE — Timeline === */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-left: 20px;
+  border-left: 2px solid var(--line);
+}
+
+.timeline-item {
+  position: relative;
+  padding-left: 20px;
+}
+
+.timeline-item::before {
+  content: "";
+  position: absolute;
+  left: -27px;
+  top: 8px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--surface);
+}
+
+.timeline-marker {
+  margin-bottom: 8px;
+}
+
+/* === ABOUT PAGE — Values grid === */
+.values-grid {
+  gap: 16px;
+}
+
+/* === CHANGELOG PAGE === */
+.changelog-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.changelog-entry {
+  padding: 24px;
+}
+
+.changelog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.changelog-version-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.changelog-version {
+  font-size: clamp(22px, 2.5vw, 30px);
+  margin-bottom: 0;
+}
+
+.changelog-date {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.changelog-summary {
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+.changelog-changes li {
+  font-size: 15px;
+}
+
+.changelog-footer {
+  margin-top: 32px;
+  text-align: center;
+}
+
+.release-icon {
+  font-size: 10px;
+}
+
+.release-icon--release {
+  color: var(--accent);
+}
+
+.release-icon--fix {
+  color: #b5855a;
+}
+
+.release-icon--feature {
+  color: #4f8d7a;
+}
+
+/* === RESPONSIVE — Form e nuove pagine === */
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .values-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .demo-steps-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .values-grid {
+    grid-template-columns: 1fr;
   }
 }

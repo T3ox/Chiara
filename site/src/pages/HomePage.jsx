@@ -18,6 +18,7 @@
  */
 import { useEffect, useState } from "react";
 import { LANDING_CONTENT } from "../data/landingContent";
+import usePageMeta from "../hooks/usePageMeta";
 
 import HeroSection from "../components/sections/HeroSection";
 import TrustStrip from "../components/sections/TrustStrip";
@@ -30,6 +31,7 @@ import FaqSection from "../components/sections/FaqSection";
 import CtaSection from "../components/sections/CtaSection";
 
 export default function HomePage() {
+  usePageMeta(); // homepage usa i default
   // Testo del titolo hero mostrato progressivamente dall'effetto "macchina da scrivere"
   const [typedTitle, setTypedTitle] = useState(LANDING_CONTENT.hero.title);
 

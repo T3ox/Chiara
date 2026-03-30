@@ -162,8 +162,8 @@ export const LANDING_CONTENT = {
         name: "VEDI",
         tagline: "La fotografia della cartella",
         summary: "Analizza nomi, contenuti e metadati per capire cosa c'è davvero nella cartella.",
-        cta: "Scopri di più",
-        ctaHref: "#come-funziona",
+        cta: "Vedi un esempio",
+        ctaHref: "#before-after",
         details: [
           {
             title: "Mappa subito i file",
@@ -180,7 +180,7 @@ export const LANDING_CONTENT = {
         name: "CHIEDI",
         tagline: "Il copilota operativo",
         summary: "Descrivi a parole tue come vuoi i file: l'AI interpreta e genera regole coerenti.",
-        cta: "Scopri di più",
+        cta: "Come funziona",
         ctaHref: "#come-funziona",
         details: [
           {
