@@ -3,14 +3,17 @@ const selectedPath = document.getElementById('selectedPath');
 const status = document.getElementById('status');
 const confirmBtn = document.getElementById('confirmBtn');
 const folderPicker = document.getElementById('folderPicker');
+const actions = document.querySelector('.actions');
 const profileBtn = document.getElementById('profileBtn');
 const profileSidebar = document.getElementById('profileSidebar');
 const profileOverlay = document.getElementById('profileOverlay');
 const profileClose = document.getElementById('profileClose');
 const profileName = document.getElementById('profileName');
+const profileEmail = document.getElementById('profileEmail');
 const profilePackage = document.getElementById('profilePackage');
 const profileGbFill = document.getElementById('profileGbFill');
 const profileGbLabel = document.getElementById('profileGbLabel');
+const profileLogoutBtn = document.getElementById('profileLogoutBtn');
 const folderSizeWarning = document.getElementById('folderSizeWarning');
 const folderSizeWarningText = document.getElementById('folderSizeWarningText');
 const upgradeBtn = document.getElementById('upgradeBtn');
@@ -27,12 +30,103 @@ upgradeBtn.addEventListener('click', (e) => {
 const readProgressContainer = document.getElementById('readProgressContainer');
 const readProgressBar = document.getElementById('readProgressBar');
 const readProgressText = document.getElementById('readProgressText');
+const loginForm = document.getElementById('loginForm');
+const loginIdentifier = document.getElementById('loginIdentifier');
+const loginPassword = document.getElementById('loginPassword');
+const loginSubmitBtn = document.getElementById('loginSubmitBtn');
+const googleLoginBtn = document.getElementById('googleLoginBtn');
+const oauthActions = document.getElementById('oauthActions');
+const loginStatus = document.getElementById('loginStatus');
+const loginBadge = document.getElementById('loginBadge');
+const loginSessionLabel = document.getElementById('loginSessionLabel');
+const logoutBtn = document.getElementById('logoutBtn');
 
 let selectedFiles = [];
 let userProfile = null;
+let isAuthenticated = false;
+const DEFAULT_PRODUCT_CODE = 'default';
 
 function setStatus(msg) {
   status.textContent = msg || '';
+}
+
+function setLoginStatus(message, isError = false) {
+  loginStatus.textContent = message || '';
+  loginStatus.classList.toggle('error', isError);
+}
+
+function setAuthenticated(value, profile) {
+  isAuthenticated = value;
+  userProfile = value ? profile : null;
+  dropzone.classList.toggle('hidden', !value);
+  actions.classList.toggle('hidden', !value);
+  status.classList.toggle('hidden', !value);
+  readProgressContainer.classList.add('hidden');
+  loginBadge.textContent = value ? 'Autenticato' : 'Non autenticato';
+  loginBadge.classList.toggle('authenticated', value);
+  loginForm.classList.toggle('hidden', value);
+  oauthActions.classList.toggle('hidden', value);
+  logoutBtn.classList.toggle('hidden', !value);
+  profileBtn.disabled = !value;
+  profileBtn.classList.toggle('hidden', !value);
+  loginSessionLabel.textContent = value
+    ? `Sessione attiva${profile && profile.email ? ` per ${profile.email}` : ''}.`
+    : 'Effettua il login con le credenziali abilitate su auth-service.';
+  updateProfileUI(profile);
+
+  if (!value) {
+    selectedFiles = [];
+    selectedPath.textContent = 'Nessuna cartella selezionata';
+    folderSizeWarning.classList.add('hidden');
+    setStatus('');
+    confirmBtn.disabled = true;
+    toggleProfileSidebar(false);
+  } else if (selectedFiles.length > 0) {
+    confirmBtn.disabled = false;
+  }
+}
+
+function mapSessionToProfile(sessionPayload) {
+  const user = sessionPayload && sessionPayload.user ? sessionPayload.user : null;
+  if (!user) {
+    return null;
+  }
+
+  const memberships = Array.isArray(user.memberships) ? user.memberships : [];
+  const membership = memberships[0] || {};
+  return {
+    name: user.email || user.sub || user.id || 'Utente autenticato',
+    email: user.email || '',
+    package: membership.productCode || '—',
+    gbUsed: 0,
+    gbTotal: 0
+  };
+}
+
+async function refreshAuthSession() {
+  try {
+    const sessionPayload = await window.electronAPI.getAuthSession();
+    const profile = mapSessionToProfile(sessionPayload);
+    setAuthenticated(Boolean(profile), profile);
+    setLoginStatus(profile ? 'Sessione gia attiva.' : '');
+    return profile;
+  } catch (_err) {
+    setAuthenticated(false, null);
+    return null;
+  }
+}
+
+async function handleLogout() {
+  try {
+    await window.electronAPI.logout();
+  } catch (err) {
+    console.warn('Logout non riuscito:', err);
+  }
+
+  loginPassword.value = '';
+  setLoginStatus('');
+  setAuthenticated(false, null);
+  toggleProfileSidebar(false);
 }
 
 async function setSelection(files) {
@@ -74,7 +168,7 @@ async function setSelection(files) {
       confirmBtn.disabled = false;
     }
   } else {
-    confirmBtn.disabled = false;
+    confirmBtn.disabled = !isAuthenticated;
   }
   
   setStatus('');
@@ -82,6 +176,7 @@ async function setSelection(files) {
 
 // Drag over/leave
 dropzone.addEventListener('dragover', (e) => {
+  if (!isAuthenticated) return;
   e.preventDefault();
   dropzone.classList.add('dragover');
   setStatus('Rilascia per selezionare');
@@ -94,6 +189,11 @@ dropzone.addEventListener('dragleave', () => {
 
 // Drop
 dropzone.addEventListener('drop', async (e) => {
+  if (!isAuthenticated) {
+    setStatus('Effettua il login prima di selezionare una cartella.');
+    return;
+  }
+
   e.preventDefault();
   dropzone.classList.remove('dragover');
 
@@ -180,6 +280,11 @@ dropzone.addEventListener('drop', async (e) => {
 
 // Folder picker (consigliato)
 folderPicker.addEventListener('change', async (e) => {
+  if (!isAuthenticated) {
+    setStatus('Effettua il login prima di selezionare una cartella.');
+    return;
+  }
+
   const files = e.target.files;
   const totalFiles = files.length;
   
@@ -204,11 +309,16 @@ folderPicker.addEventListener('change', async (e) => {
 
 // Cliccare sulla dropzone per aprire il selettore file
 dropzone.addEventListener('click', () => {
+  if (!isAuthenticated) {
+    setStatus('Effettua il login prima di selezionare una cartella.');
+    return;
+  }
+
   folderPicker.click();
 });
 
 confirmBtn.addEventListener('click', () => {
-  if (selectedFiles.length === 0) return;
+  if (!isAuthenticated || selectedFiles.length === 0) return;
   setStatus(`Confermato (${selectedFiles.length} file). Qui chiameresti la tua logica.`);
   // Qui metti la logica equivalente a ConfirmButton_Click
   // es: upload, chiamata API, ecc.
@@ -216,6 +326,11 @@ confirmBtn.addEventListener('click', () => {
 
 // --- Profile Sidebar Logic --- //
 function toggleProfileSidebar(show) {
+  if (show && !isAuthenticated) {
+    setStatus('Effettua il login per aprire il profilo.');
+    return;
+  }
+
   if (show) {
     profileSidebar.classList.add('open');
     profileOverlay.classList.add('visible');
@@ -230,10 +345,15 @@ function toggleProfileSidebar(show) {
 
 async function fetchProfileData() {
   try {
-    const response = await fetch('http://localhost:3000/api/user/profile');
-    if (!response.ok) return;
-    const data = await response.json();
+    const data = window.electronAPI.getAuthProfile
+      ? await window.electronAPI.getAuthProfile()
+      : await fetch('http://localhost:3000/api/user/profile').then((response) => {
+        if (!response.ok) return null;
+        return response.json();
+      });
+    if (!data) return;
     userProfile = data;
+    setAuthenticated(true, data);
     updateProfileUI(data);
   } catch (err) {
     console.warn("Impossibile recuperare i dati del profilo:", err);
@@ -241,21 +361,82 @@ async function fetchProfileData() {
 }
 
 function updateProfileUI(data) {
-  profileName.textContent = data.name || '—';
-  profilePackage.textContent = data.package || '—';
+  profileName.textContent = data && data.name ? data.name : '—';
+  profileEmail.textContent = data && data.email ? data.email : '—';
+  profilePackage.textContent = data && data.package ? data.package : '—';
   
-  if (data.mbTotal > 0) {
-    const remainingMB = data.mbTotal - data.mbUsed;
-    const remainingGB = remainingMB / 1024;
-    const percentage = (remainingMB / data.mbTotal) * 100;
+  if (data && data.gbTotal > 0) {
+    const remaining = data.gbTotal - data.gbUsed;
+    const percentage = (remaining / data.gbTotal) * 100;
     profileGbFill.style.width = `${100 - percentage}%`;
-    profileGbLabel.textContent = `${remainingGB.toFixed(1)} GB rimanenti`;
+    profileGbLabel.textContent = `${remaining.toFixed(1)} GB rimanenti`;
+  } else {
+    profileGbFill.style.width = '0%';
+    profileGbLabel.textContent = 'Quota non disponibile';
   }
 }
 
 profileBtn.addEventListener('click', () => toggleProfileSidebar(true));
 profileClose.addEventListener('click', () => toggleProfileSidebar(false));
 profileOverlay.addEventListener('click', () => toggleProfileSidebar(false));
+logoutBtn.addEventListener('click', handleLogout);
+profileLogoutBtn.addEventListener('click', handleLogout);
+
+loginForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+
+  const identifier = loginIdentifier.value.trim();
+  const password = loginPassword.value;
+
+  if (!identifier || !password) {
+    setLoginStatus('Inserisci username/email e password.', true);
+    return;
+  }
+
+  loginSubmitBtn.disabled = true;
+  setLoginStatus('Autenticazione in corso...');
+
+  try {
+    const sessionPayload = await window.electronAPI.loginWithPassword({
+      username: identifier,
+      email: identifier,
+      password,
+      productCode: DEFAULT_PRODUCT_CODE
+    });
+    const profile = mapSessionToProfile(sessionPayload);
+    setAuthenticated(true, profile);
+    setLoginStatus('Login completato.');
+    loginPassword.value = '';
+    setStatus('');
+  } catch (err) {
+    setAuthenticated(false, null);
+    setLoginStatus(err && err.message ? err.message : 'Login non riuscito.', true);
+  } finally {
+    loginSubmitBtn.disabled = false;
+  }
+});
+
+googleLoginBtn.addEventListener('click', async () => {
+  googleLoginBtn.disabled = true;
+  loginSubmitBtn.disabled = true;
+  setLoginStatus('Apertura login Google...');
+
+  try {
+    const sessionPayload = await window.electronAPI.loginWithGoogle({
+      productCode: DEFAULT_PRODUCT_CODE
+    });
+    const profile = mapSessionToProfile(sessionPayload);
+    setAuthenticated(true, profile);
+    setLoginStatus('Login Google completato.');
+    loginPassword.value = '';
+    setStatus('');
+  } catch (err) {
+    setLoginStatus(err && err.message ? err.message : 'Login Google non riuscito.', true);
+  } finally {
+    googleLoginBtn.disabled = false;
+    loginSubmitBtn.disabled = false;
+  }
+});
 
 // --- Update Checker Logic --- //
 const currentVersion = "0.1.0";
@@ -366,5 +547,9 @@ if (window.electronAPI && window.electronAPI.onDownloadStatus) {
     });
 }
 
-// Run check on load
-window.addEventListener('DOMContentLoaded', checkForUpdates);
+// Run checks on load
+window.addEventListener('DOMContentLoaded', async () => {
+  setAuthenticated(false, null);
+  await refreshAuthSession();
+  checkForUpdates();
+});
