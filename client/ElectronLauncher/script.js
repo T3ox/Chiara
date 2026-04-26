@@ -42,6 +42,8 @@ const loginSessionLabel = document.getElementById('loginSessionLabel');
 const logoutBtn = document.getElementById('logoutBtn');
 
 let selectedFiles = [];
+let selectedFolderPath = null;
+let selectedFolderSummary = null;
 let userProfile = null;
 let isAuthenticated = false;
 const DEFAULT_PRODUCT_CODE = 'default';
@@ -76,6 +78,8 @@ function setAuthenticated(value, profile) {
 
   if (!value) {
     selectedFiles = [];
+    selectedFolderPath = null;
+    selectedFolderSummary = null;
     selectedPath.textContent = 'Nessuna cartella selezionata';
     folderSizeWarning.classList.add('hidden');
     setStatus('');
@@ -131,10 +135,14 @@ async function handleLogout() {
 
 async function setSelection(files) {
   selectedFiles = Array.from(files || []);
+  selectedFolderPath = resolveFolderPathFromFiles(selectedFiles);
+  selectedFolderSummary = null;
   const fileCount = selectedFiles.length;
 
   if (fileCount === 0) {
     selectedPath.textContent = 'Nessuna cartella selezionata';
+    selectedFolderPath = null;
+    selectedFolderSummary = null;
     confirmBtn.disabled = true;
     folderSizeWarning.classList.add('hidden');
     return;
@@ -172,6 +180,57 @@ async function setSelection(files) {
   }
   
   setStatus('');
+}
+
+async function setFolderSelection(selection) {
+  if (!selection) return;
+
+  selectedFiles = [];
+  selectedFolderPath = selection.folderPath;
+  selectedFolderSummary = selection;
+
+  const fileCount = selection.fileCount || 0;
+  const totalSizeBytes = selection.totalSizeBytes || 0;
+  const totalSizeMB = totalSizeBytes / (1024 * 1024);
+  const totalSizeGB = totalSizeMB / 1024;
+
+  selectedPath.textContent = `Selezionato: ${selection.folderName} (${fileCount} file, ${totalSizeGB.toFixed(2)} GB)`;
+
+  if (!userProfile) {
+    await fetchProfileData();
+  }
+
+  if (userProfile) {
+    const remainingMB = userProfile.mbTotal - userProfile.mbUsed;
+    const remainingGB = remainingMB / 1024;
+
+    if (totalSizeMB > remainingMB) {
+      folderSizeWarningText.textContent = `⚠️ Cartella troppo grande (${totalSizeGB.toFixed(2)} GB). Spazio rimanente: ${remainingGB.toFixed(2)} GB.`;
+      folderSizeWarning.classList.remove('hidden');
+      confirmBtn.disabled = true;
+    } else {
+      folderSizeWarning.classList.add('hidden');
+      confirmBtn.disabled = false;
+    }
+  } else {
+    confirmBtn.disabled = !isAuthenticated;
+  }
+
+  setStatus('');
+}
+
+function resolveFolderPathFromFiles(files) {
+  if (!Array.isArray(files) || files.length === 0) return null;
+
+  const firstPath = files.find((file) => typeof file.path === 'string' && file.path).path;
+  if (!firstPath) return null;
+
+  const rel = files[0].webkitRelativePath || files[0].name;
+  const firstRelativeParts = rel.includes('/') ? rel.split('/') : [files[0].name];
+  const depthToFolder = Math.max(firstRelativeParts.length - 1, 1);
+  const separator = firstPath.includes('\\') ? '\\' : '/';
+  const parts = firstPath.split(/[\\/]/);
+  return parts.slice(0, Math.max(parts.length - depthToFolder, 1)).join(separator);
 }
 
 // Drag over/leave
@@ -314,15 +373,44 @@ dropzone.addEventListener('click', () => {
     return;
   }
 
+  if (window.electronAPI && window.electronAPI.selectFolder) {
+    window.electronAPI.selectFolder()
+      .then((selection) => setFolderSelection(selection))
+      .catch((err) => setStatus(err && err.message ? err.message : 'Selezione cartella non riuscita.'));
+    return;
+  }
+
   folderPicker.click();
 });
 
-confirmBtn.addEventListener('click', () => {
-  if (!isAuthenticated || selectedFiles.length === 0) return;
-  setStatus(`Confermato (${selectedFiles.length} file). Qui chiameresti la tua logica.`);
-  // Qui metti la logica equivalente a ConfirmButton_Click
-  // es: upload, chiamata API, ecc.
+confirmBtn.addEventListener('click', async () => {
+  if (!isAuthenticated || !selectedFolderPath) {
+    setStatus('Seleziona una cartella prima di confermare.');
+    return;
+  }
+
+  confirmBtn.disabled = true;
+  setStatus('Avvio organizzazione cartella...');
+
+  try {
+    await window.electronAPI.runFolderOrganizer(selectedFolderPath);
+    setStatus('Organizzazione completata.');
+  } catch (err) {
+    setStatus(err && err.message ? err.message : 'Errore durante esecuzione script Python.');
+  } finally {
+    confirmBtn.disabled = false;
+  }
 });
+
+if (window.electronAPI && window.electronAPI.onFolderOrganizerOutput) {
+  window.electronAPI.onFolderOrganizerOutput((type, text) => {
+    const lines = String(text || '').trim().split(/\r?\n/).filter(Boolean);
+    const lastLine = lines[lines.length - 1];
+    if (lastLine) {
+      setStatus(type === 'stderr' ? `Python: ${lastLine}` : lastLine);
+    }
+  });
+}
 
 // --- Profile Sidebar Logic --- //
 function toggleProfileSidebar(show) {
