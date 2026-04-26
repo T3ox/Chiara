@@ -5,5 +5,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onDownloadStatus: (callback) => ipcRenderer.on('download-status', (_event, status, message) => callback(status, message)),
   onDownloadProgress: (callback) => ipcRenderer.on('download-progress', (_event, percentage) => callback(percentage)),
   getPlatform: () => process.platform,
-  openExternal: (url) => ipcRenderer.send('open-external', url)
+  loginWithPassword: (credentials) => ipcRenderer.invoke('auth-login-password', credentials),
+  loginWithGoogle: (options) => ipcRenderer.invoke('auth-login-google', options),
+  getAuthSession: () => ipcRenderer.invoke('auth-session'),
+  getAuthProfile: () => ipcRenderer.invoke('auth-profile'),
+  logout: () => ipcRenderer.invoke('auth-logout')
 });

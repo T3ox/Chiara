@@ -2,12 +2,27 @@
   "name": "folder-organizer-backend",
   "version": "1.0.0",
   "description": "Un semplice backend Node.js per fornire la versione dell'app al client .NET",
-  "main": "index.js",
+  "main": "dist/main.js",
   "scripts": {
-    "start": "node index.js"
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/main.js",
+    "start:dev": "ts-node src/main.ts"
   },
   "dependencies": {
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
-    "express": "^4.19.2"
+    "dotenv": "^17.4.2",
+    "express": "^4.19.2",
+    "jose": "^6.2.2",
+    "pg": "^8.20.0"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^22.19.17",
+    "@types/pg": "^8.20.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   }
 }

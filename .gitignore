@@ -2,6 +2,8 @@
 **/bin/
 **/obj/
 client/ElectronLauncher/dist
+backend/dist/
+backend/tsconfig.tsbuildinfo
 
 # Visual Studio
 .vs/

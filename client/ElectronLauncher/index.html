@@ -43,6 +43,10 @@
         <span class="profile-value" id="profileName">—</span>
       </div>
       <div class="profile-field">
+        <span class="profile-label">Email</span>
+        <span class="profile-value" id="profileEmail">—</span>
+      </div>
+      <div class="profile-field">
         <span class="profile-label">Pacchetto</span>
         <span class="profile-value" id="profilePackage">—</span>
       </div>
@@ -54,6 +58,7 @@
         <span class="profile-gb-label" id="profileGbLabel">— GB rimanenti</span>
       </div>
     </div>
+    <button id="profileLogoutBtn" class="btn btn-secondary profile-logout" type="button">Logout</button>
   </aside>
 
   <!-- Overlay per chiudere sidebar cliccando fuori -->
@@ -62,6 +67,40 @@
   <div class="window">
     <h1 class="title">Chiara Launcher</h1>
     <h2 id="versionLabel" class="version-label">Version</h2>
+
+    <section id="loginSection" class="login-section">
+      <div class="login-heading">
+        <div>
+          <h3>Accesso</h3>
+          <p id="loginSessionLabel">Effettua il login con le credenziali abilitate su auth-service.</p>
+        </div>
+        <span id="loginBadge" class="login-badge">Non autenticato</span>
+      </div>
+
+      <form id="loginForm" class="login-form">
+        <label>
+          <span>Username o email</span>
+          <input id="loginIdentifier" type="text" autocomplete="username" required>
+        </label>
+        <label>
+          <span>Password</span>
+          <input id="loginPassword" type="password" autocomplete="current-password" required>
+        </label>
+        <button id="loginSubmitBtn" class="btn" type="submit">Accedi</button>
+      </form>
+
+      <div id="oauthActions" class="oauth-actions">
+        <button id="googleLoginBtn" class="btn-secondary google-login" type="button">
+          <span class="google-mark" aria-hidden="true">G</span>
+          Accedi con Google
+        </button>
+      </div>
+
+      <div class="login-footer">
+        <span id="loginStatus" class="login-status"></span>
+        <button id="logoutBtn" class="btn-secondary hidden" type="button">Logout</button>
+      </div>
+    </section>
 
     <div id="dropzone" class="dropzone">
       <div>
