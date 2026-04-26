@@ -81,8 +81,8 @@ async function startGoogleLogin(options) {
   const productCode = typeof options.productCode === 'string'
     ? options.productCode.trim()
     : '';
-  const authUrl = new URL(`${BFF_BASE_URL}/api/auth/oidc/google/start`);
-  authUrl.searchParams.set('returnTo', `${BFF_BASE_URL}/oauth-complete`);
+  const authUrl = new URL(`${BFF_BASE_URL}/api/auth/providers/google/start`);
+  authUrl.searchParams.set('redirect', '/oauth-complete');
   if (productCode) {
     authUrl.searchParams.set('productCode', productCode);
   }
