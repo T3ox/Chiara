@@ -2,6 +2,7 @@
 **/bin/
 **/obj/
 client/ElectronLauncher/dist
+client/ElectronLauncher/build
 backend/dist/
 backend/tsconfig.tsbuildinfo
 

@@ -1,13 +1,18 @@
 {
   "name": "electronlauncher",
   "version": "0.1.0",
-  "main": "index.js",
+  "main": "build/main/index.js",
   "scripts": {
     "sync-theme": "node sync-theme-vars.js",
-    "start": "npm run sync-theme && electron .",
+    "dev:renderer": "vite --host 127.0.0.1 --port 5174",
+    "dev": "npm run sync-theme && npm run build:main && node dev-runner.js",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.main.json",
+    "build:main": "tsc -p tsconfig.main.json",
+    "build:renderer": "npm run sync-theme && npm run typecheck && vite build",
+    "start": "npm run build:main && npm run build:renderer && electron .",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:mac": "npm run sync-theme && electron-builder --mac",
-    "build:win": "npm run sync-theme && electron-builder --win",
+    "build:mac": "npm run build:main && npm run build:renderer && electron-builder --mac",
+    "build:win": "npm run build:main && npm run build:renderer && electron-builder --win",
     "build": "npm run build:mac"
   },
   "keywords": [],
@@ -17,12 +22,28 @@
   "build": {
     "appId": "com.t3ox.folderorganizerlauncher",
     "productName": "FolderOrganizer Launcher",
+    "files": [
+      "build/main/**/*",
+      "build/preload/**/*",
+      "dist/**/*",
+      "package.json"
+    ],
     "win": {
       "target": ["nsis", "zip"]
     }
   },
+  "dependencies": {
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  },
   "devDependencies": {
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@types/node": "^22.14.0",
+    "@vitejs/plugin-react": "^5.0.0",
     "electron": "^40.7.0",
-    "electron-builder": "^26.8.1"
+    "electron-builder": "^26.8.1",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.0"
   }
 }
