@@ -57,7 +57,25 @@ Oppure esplicitando i parametri:
 python main.py --input-dir "/percorso/cartella-da-organizzare" --model llama3.2 --vision-model qwen3-vl:8b --timeout 60
 ```
 
-Di default lo script lascia i file nella cartella di origine quando riesce a ricavare un nome utile, rinominandoli sul posto con nomi leggibili. Sposta fisicamente in `DaRevisionare` solo i file per cui non riesce a decidere un nome affidabile, oppure i file non leggibili/non supportati.
+Di default lo script lascia i file nella cartella di origine quando riesce a ricavare un nome utile, rinominandoli con nomi leggibili e raggruppandoli in una sottocartella tematica. Per esempio:
+
+```text
+cartella-da-organizzare/
+  Fatture/
+    2026-04-Cliente_Rossi.pdf
+  Contratti/
+    Accordo_Fornitura.docx
+```
+
+Quando un file viene spostato in una cartella di destinazione, il percorso finale usa sempre il formato `CartellaDestinazione/Tema/NomeFile.ext`. I file dubbi finiscono quindi in percorsi come `DaRevisionare/Documenti/DA_REVISIONARE.pdf`.
+
+Il tema viene chiesto al modello Ollama tramite JSON:
+
+```json
+{"new_name":"NomeFileSenzaEstensione","target_folder":"Cartella","theme":"TemaFilesystemSafe","reasoning":"motivo breve"}
+```
+
+Per compatibilita con i prompt e i modelli precedenti, lo script accetta ancora il vecchio output `Nome___Cartella`: in quel caso calcola un tema deterministico dal nome, dal contenuto estratto, dal tipo file e dalla cartella scelta.
 
 Prima di spostare file dubbi puoi usare la modalita anteprima:
 
@@ -65,7 +83,7 @@ Prima di spostare file dubbi puoi usare la modalita anteprima:
 python main.py --input-dir "/percorso/cartella-da-organizzare" --dry-run
 ```
 
-Ogni esecuzione registra le operazioni in `.organizer_history.json` dentro la cartella di output. Le rinomine in origine sono salvate con `action: "rename_in_place"` e `target_folder: ""`; gli spostamenti in revisione usano `action: "move_to_review"` o `action: "quarantine"`. Per annullare l'ultima sessione completata:
+Ogni esecuzione registra le operazioni in `.organizer_history.json` dentro la cartella di output. Le rinomine in origine sono salvate con `action: "rename_in_place"`, `target_folder: ""` e il campo `theme`; gli spostamenti in revisione usano `action: "move_to_review"` o `action: "quarantine"`. L'undo ripristina i file nei percorsi originali e rimuove le sottocartelle tematiche rimaste vuote. Per annullare l'ultima sessione completata:
 
 ```bash
 python undo.py --history "/percorso/cartella-output/.organizer_history.json"

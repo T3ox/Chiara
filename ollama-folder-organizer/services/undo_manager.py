@@ -33,6 +33,7 @@ class UndoManager:
         new_path: str,
         target_folder: str,
         action: str = "move_to_review",
+        theme: str = "",
     ) -> None:
         session = self._current_session()
         if not session:
@@ -44,6 +45,7 @@ class UndoManager:
                 "new": os.path.abspath(new_path),
                 "action": action,
                 "target_folder": target_folder,
+                "theme": theme,
                 "timestamp": datetime.now().isoformat(timespec="seconds"),
             }
         )
@@ -86,6 +88,7 @@ class UndoManager:
                 continue
 
             shutil.move(new, original)
+            self._remove_empty_dir(os.path.dirname(new), session)
             restored += 1
 
         session["status"] = "undone" if not errors else "undo_partial"
@@ -115,3 +118,19 @@ class UndoManager:
             os.makedirs(history_dir, exist_ok=True)
         with open(self.history_path, "w", encoding="utf-8") as file:
             json.dump(self.history, file, ensure_ascii=False, indent=2)
+
+    @staticmethod
+    def _remove_empty_dir(target_dir: str, session: Dict[str, object]) -> None:
+        stop_dirs = {
+            os.path.abspath(str(session.get("input_dir", ""))),
+            os.path.abspath(str(session.get("result_dir", ""))),
+        }
+        current = os.path.abspath(target_dir)
+
+        if current in stop_dirs:
+            return
+
+        try:
+            os.rmdir(current)
+        except OSError:
+            return

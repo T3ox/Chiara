@@ -30,6 +30,13 @@ def sanitize_name(name: str) -> str:
     return truncated or cleaned[:70].strip(" -") or "DA_REVISIONARE"
 
 
+def sanitize_theme_name(name: str) -> str:
+    cleaned = sanitize_name(name)
+    if is_uncertain_theme(cleaned):
+        return "Generale"
+    return cleaned[:50].strip(" -") or "Generale"
+
+
 def should_skip_file(file_path: str) -> bool:
     file_name = os.path.basename(file_path)
     return file_name in IGNORED_FILENAMES or file_name.startswith("FAILED__")
@@ -92,13 +99,15 @@ async def process_file(
         if "___" not in raw_result:
             raw_result = review_classification(file_name, content, available_folders)
 
-        new_name, target_folder = [s.strip() for s in raw_result.split("___", 1)]
+        new_name, target_folder, theme = parse_classification(raw_result)
         new_name = sanitize_name(new_name)
         if is_uncertain_name(new_name):
             new_name = content_title_name(content) or new_name
 
         if not target_folder or target_folder not in available_folders:
             target_folder = "DaRevisionare" if "DaRevisionare" in available_folders else available_folders[0]
+
+        theme = sanitize_theme_name(theme or fallback_theme(file_name, content, target_folder, file_type))
 
         if target_folder != "DaRevisionare" or not is_uncertain_name(new_name):
             return move_or_rename_in_origin(
@@ -107,21 +116,27 @@ async def process_file(
                 ext=ext,
                 result_dir=result_dir,
                 classification=target_folder,
+                theme=theme,
                 dry_run=dry_run,
                 undo_manager=undo_manager,
             )
 
-        target_dir = os.path.join(result_dir, target_folder)
+        target_dir = os.path.join(result_dir, target_folder, theme)
         new_file_path = unique_path(os.path.join(target_dir, f"{new_name}{ext}"))
-        undo_manager.record_move(file_path, new_file_path, target_folder, action="move_to_review")
+        undo_manager.record_move(file_path, new_file_path, target_folder, action="move_to_review", theme=theme)
 
         if dry_run:
-            return {"success": True, "target": os.path.relpath(new_file_path, result_dir), "dry_run": True}
+            return {
+                "success": True,
+                "target": os.path.relpath(new_file_path, result_dir),
+                "theme": theme,
+                "dry_run": True,
+            }
 
         os.makedirs(target_dir, exist_ok=True)
         shutil.move(file_path, new_file_path)
 
-        return {"success": True, "target": os.path.relpath(new_file_path, result_dir)}
+        return {"success": True, "target": os.path.relpath(new_file_path, result_dir), "theme": theme}
 
     except Exception as exc:
         logger.error("Error processing %s: %s", file_name, exc)
@@ -164,44 +179,61 @@ def unique_path(path: str) -> str:
         counter += 1
 
 
+def parse_classification(raw_result: str) -> tuple[str, str, str]:
+    parts = [part.strip() for part in raw_result.split("___", 2)]
+    if len(parts) == 1:
+        return parts[0], "", ""
+    if len(parts) == 2:
+        return parts[0], parts[1], ""
+    return parts[0], parts[1], parts[2]
+
+
 def move_or_rename_in_origin(
     file_path: str,
     new_name: str,
     ext: str,
     result_dir: str,
     classification: str,
+    theme: str,
     dry_run: bool,
     undo_manager: UndoManager,
 ) -> Dict[str, Any]:
     source_dir = os.path.dirname(file_path)
     current_stem = os.path.splitext(os.path.basename(file_path))[0]
     clean_name = sanitize_name(new_name)
+    clean_theme = sanitize_theme_name(theme)
+    target_dir = os.path.join(source_dir, clean_theme)
+    desired_path = os.path.join(target_dir, f"{clean_name}{ext}")
 
-    if sanitize_name(current_stem) == clean_name:
+    if os.path.abspath(file_path) == os.path.abspath(desired_path):
         return {
             "success": True,
             "target": os.path.relpath(file_path, result_dir),
             "classification": classification,
+            "theme": clean_theme,
             "kept": True,
         }
 
-    new_file_path = unique_path(os.path.join(source_dir, f"{clean_name}{ext}"))
-    undo_manager.record_move(file_path, new_file_path, "", action="rename_in_place")
+    new_file_path = unique_path(desired_path)
+    undo_manager.record_move(file_path, new_file_path, "", action="rename_in_place", theme=clean_theme)
 
     if dry_run:
         return {
             "success": True,
             "target": os.path.relpath(new_file_path, result_dir),
             "classification": classification,
+            "theme": clean_theme,
             "renamed": True,
             "dry_run": True,
         }
 
+    os.makedirs(target_dir, exist_ok=True)
     shutil.move(file_path, new_file_path)
     return {
         "success": True,
         "target": os.path.relpath(new_file_path, result_dir),
         "classification": classification,
+        "theme": clean_theme,
         "renamed": True,
     }
 
@@ -225,10 +257,49 @@ def is_uncertain_name(name: str) -> bool:
     }
 
 
+def is_uncertain_theme(name: str) -> bool:
+    normalized = re.sub(r"[^a-z0-9]+", "", sanitize_name(name).lower())
+    return normalized in {"", "darevisionare", "revisionare", "unknown", "sconosciuto", "nonclassificato"}
+
+
 def review_classification(file_name: str, content: Dict[str, str], available_folders: List[str]) -> str:
     target_folder = "DaRevisionare" if "DaRevisionare" in available_folders else available_folders[0]
     new_name = best_content_name(file_name, content)
-    return f"{new_name}___{target_folder}"
+    theme = fallback_theme(file_name, content, target_folder, SUPPORTED_EXTENSIONS.get(os.path.splitext(file_name)[1].lower(), ""))
+    return f"{new_name}___{target_folder}___{theme}"
+
+
+def fallback_theme(file_name: str, content: Dict[str, str], target_folder: str, file_type: str) -> str:
+    haystack = f"{file_name}\n{content.get('text', '')[:2500]}".lower()
+    keyword_themes = [
+        ("Fatture", ("fattura", "invoice", "quietanza", "ricevuta", "pagamento")),
+        ("Contratti", ("contratto", "agreement", "accordo", "clausola", "firma")),
+        ("Preventivi", ("preventivo", "offerta", "quotation", "proposal", "proposta")),
+        ("Report", ("report", "relazione", "analisi", "consuntivo", "rendiconto")),
+        ("Contabilita", ("bilancio", "contabil", "iva", "importo", "totale", "scadenza")),
+        ("Progetti", ("progetto", "cantiere", "specifica", "requisiti", "roadmap")),
+        ("Formazione", ("corso", "lezione", "training", "workshop", "slide")),
+        ("Codice", ("def ", "class ", "function ", "import ", "const ", "var ", "let ")),
+        ("Log", ("error", "warning", "traceback", "exception", "stack trace")),
+        ("Dati", ("csv", "dataset", "tabella", "colonna", "record")),
+    ]
+
+    for theme, keywords in keyword_themes:
+        if any(keyword in haystack for keyword in keywords):
+            return theme
+
+    type_theme = {
+        "pdf": "Documenti",
+        "docx": "Documenti",
+        "excel": "FogliDiCalcolo",
+        "presentation": "Presentazioni",
+        "images": "Immagini",
+        "text": "Testi",
+    }.get(file_type)
+    if type_theme:
+        return type_theme
+
+    return sanitize_theme_name(target_folder)
 
 
 def best_content_name(file_name: str, content: Dict[str, str]) -> str:
@@ -368,10 +439,16 @@ async def main() -> None:
         if result["success"]:
             if result.get("renamed"):
                 prefix = "DRY-RUN RENAME" if result.get("dry_run") else "RENAME"
-                print(f"{prefix} {original_name} -> {result['target']} (classificazione: {result['classification']})")
+                print(
+                    f"{prefix} {original_name} -> {result['target']} "
+                    f"(classificazione: {result['classification']}, tema: {result['theme']})"
+                )
             elif result.get("kept"):
                 prefix = "DRY-RUN KEEP" if args.dry_run else "KEEP"
-                print(f"{prefix} {original_name} in origine (classificazione: {result['classification']})")
+                print(
+                    f"{prefix} {original_name} in origine "
+                    f"(classificazione: {result['classification']}, tema: {result['theme']})"
+                )
             else:
                 prefix = "DRY-RUN REVIEW" if result.get("dry_run") else "REVIEW"
                 print(f"{prefix} {original_name} -> {result['target']}")

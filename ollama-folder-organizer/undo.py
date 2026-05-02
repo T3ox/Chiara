@@ -1,4 +1,5 @@
 import argparse
+import sys
 
 from services.undo_manager import UndoManager
 
@@ -21,6 +22,8 @@ def main() -> None:
             print(f"- {error}")
     else:
         print(f"Undo completato. File ripristinati: {result['restored']}")
+
+    sys.exit(0 if result["success"] else 1)
 
 
 if __name__ == "__main__":

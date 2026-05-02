@@ -47,7 +47,11 @@ class OllamaService:
         user_content = (
             "Classifica e rinomina il file seguendo esattamente queste istruzioni. "
             "Rispondi con JSON valido e nessun markdown: "
-            '{"new_name":"NomeFileSenzaEstensione","target_folder":"Cartella","reasoning":"motivo breve"}\n'
+            '{"new_name":"NomeFileSenzaEstensione","target_folder":"Cartella",'
+            '"theme":"TemaFilesystemSafe","reasoning":"motivo breve"}\n'
+            "Il campo theme deve raggruppare file simili per tematica, essere breve, "
+            "filesystem-safe e contenere solo lettere, numeri, spazi, underscore o trattini. "
+            "Se istruzioni legacy nel payload chiedono una stringa con ___, preferisci comunque il JSON richiesto qui. "
             f"{json.dumps(payload, ensure_ascii=False, separators=(',', ':'))}"
         )
         images = [content["image_data"]] if content.get("image_data") else None
@@ -58,8 +62,11 @@ class OllamaService:
     async def repair_output(self, raw: str, folders: List[str]) -> str:
         instruction = {
             "regole": [
-                "Riformatta il testo ricevuto nel formato: NuovoNomeDelFile___CartellaDiDestinazione",
+                "Riformatta il testo ricevuto nel formato: NuovoNomeDelFile___CartellaDiDestinazione___Tema",
                 "Usa ESATTAMENTE UNA cartella tra quelle disponibili.",
+                "Tema deve essere breve, tematico e filesystem-safe.",
+                "Se il tema manca, deducilo dal testo ricevuto o usa Generale.",
+                "Il vecchio formato NuovoNomeDelFile___CartellaDiDestinazione e accettabile solo se non puoi dedurre il tema.",
                 "Nessun altro testo, una sola riga.",
             ],
             "cartelle_disponibili": folders,
@@ -148,10 +155,13 @@ class OllamaService:
             parsed = json.loads(clean_text)
             new_name = parsed.get("new_name") or parsed.get("name") or parsed.get("filename")
             target_folder = parsed.get("target_folder") or parsed.get("folder") or parsed.get("category")
+            theme = parsed.get("theme") or parsed.get("topic") or parsed.get("subfolder")
             if new_name and target_folder:
+                if theme:
+                    return f"{new_name}___{target_folder}___{theme}"
                 return f"{new_name}___{target_folder}"
         except json.JSONDecodeError:
             pass
 
-        match = re.search(r"([a-zA-Z0-9 _-]+___[a-zA-Z0-9 _-]+)", clean_text)
+        match = re.search(r"([a-zA-Z0-9 _-]+___[a-zA-Z0-9 _-]+(?:___[a-zA-Z0-9 _-]+)?)", clean_text)
         return match.group(1) if match else clean_text
