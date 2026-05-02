@@ -8,6 +8,7 @@ type LoginPanelProps = {
   isPending: boolean;
   onPasswordLogin: (identifier: string, password: string) => Promise<void>;
   onGoogleLogin: () => Promise<void>;
+  onMicrosoftLogin: () => Promise<void>;
   onLogout: () => Promise<void>;
 };
 
@@ -19,6 +20,7 @@ export function LoginPanel({
   isPending,
   onPasswordLogin,
   onGoogleLogin,
+  onMicrosoftLogin,
   onLogout
 }: LoginPanelProps) {
   const [identifier, setIdentifier] = useState('');
@@ -32,6 +34,11 @@ export function LoginPanel({
 
   const handleGoogleLogin = async () => {
     await onGoogleLogin();
+    setPassword('');
+  };
+
+  const handleMicrosoftLogin = async () => {
+    await onMicrosoftLogin();
     setPassword('');
   };
 
@@ -82,6 +89,15 @@ export function LoginPanel({
               G
             </span>
             Accedi con Google
+          </button>
+          <button className="btn-secondary microsoft-login" type="button" onClick={handleMicrosoftLogin} disabled={isPending}>
+            <span className="microsoft-mark" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+              <span />
+            </span>
+            Accedi con Microsoft
           </button>
         </div>
       )}

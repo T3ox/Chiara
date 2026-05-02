@@ -47,11 +47,13 @@ export type ElectronAPI = {
   getPlatform: () => string;
   loginWithPassword: (credentials: AuthCredentials) => Promise<AuthSessionPayload>;
   loginWithGoogle: (options: { productCode: string }) => Promise<AuthSessionPayload>;
+  loginWithMicrosoft: (options: { productCode: string }) => Promise<AuthSessionPayload>;
   getAuthSession: () => Promise<AuthSessionPayload>;
   getAuthProfile: () => Promise<AuthProfile | null>;
   logout: () => Promise<unknown>;
   selectFolder: () => Promise<FolderSelection | null>;
   runFolderOrganizer: (folderPath: string) => Promise<{ success: boolean; output?: string }>;
+  undoFolderOrganizer: (folderPath: string) => Promise<{ success: boolean; output?: string }>;
   onFolderOrganizerOutput: (callback: (type: 'stdout' | 'stderr', text: string) => void) => VoidFunction;
   openExternal: (url: string) => Promise<{ success: boolean }>;
 };

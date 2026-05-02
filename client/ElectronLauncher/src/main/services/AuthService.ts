@@ -27,24 +27,51 @@ export async function bffRequest(routePath: string, options: RequestOptions = {}
   return payload;
 }
 
-export async function loginWithGoogle(options: { productCode?: string }) {
+type OAuthProvider = {
+  id: 'google' | 'microsoft';
+  label: string;
+};
+
+const OAUTH_PROVIDERS: Record<OAuthProvider['id'], OAuthProvider> = {
+  google: {
+    id: 'google',
+    label: 'Google'
+  },
+  microsoft: {
+    id: 'microsoft',
+    label: 'Microsoft'
+  }
+};
+
+type OAuthLoginOptions = { productCode?: string };
+
+export async function loginWithGoogle(options: OAuthLoginOptions) {
+  return loginWithOAuthProvider('google', options);
+}
+
+export async function loginWithMicrosoft(options: OAuthLoginOptions) {
+  return loginWithOAuthProvider('microsoft', options);
+}
+
+async function loginWithOAuthProvider(providerId: OAuthProvider['id'], options: OAuthLoginOptions) {
+  const provider = OAUTH_PROVIDERS[providerId];
   const productCode = typeof options.productCode === 'string' ? options.productCode.trim() : '';
-  const authUrl = new URL(`${BFF_BASE_URL}/api/auth/providers/google/start`);
+  const authUrl = new URL(`${BFF_BASE_URL}/api/auth/providers/${provider.id}/start`);
   authUrl.searchParams.set('redirect', '/oauth-complete');
   if (productCode) {
     authUrl.searchParams.set('productCode', productCode);
   }
 
-  await openOAuthWindow(authUrl.toString());
+  await openOAuthWindow(authUrl.toString(), provider.label);
   return bffRequest('/api/auth/session');
 }
 
-function openOAuthWindow(authUrl: string) {
+function openOAuthWindow(authUrl: string, providerLabel: string) {
   return new Promise<void>((resolve, reject) => {
     const oauthWindow = new BrowserWindow({
       width: 520,
       height: 720,
-      title: 'Login Google',
+      title: `Login ${providerLabel}`,
       modal: false,
       webPreferences: {
         nodeIntegration: false,
@@ -83,11 +110,11 @@ function openOAuthWindow(authUrl: string) {
     oauthWindow.webContents.on('will-navigate', (_event, url) => inspectUrl(url));
     oauthWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription) => {
       if (completed || errorCode === -3) return;
-      fail(new Error(errorDescription || 'Login Google non riuscito.'));
+      fail(new Error(errorDescription || `Login ${providerLabel} non riuscito.`));
     });
     oauthWindow.on('closed', () => {
       if (!completed) {
-        reject(new Error('Login Google annullato.'));
+        reject(new Error(`Login ${providerLabel} annullato.`));
       }
     });
 

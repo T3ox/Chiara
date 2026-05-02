@@ -1,7 +1,7 @@
 import { app, dialog, ipcMain, shell } from 'electron';
-import { bffRequest, loginWithGoogle } from '../services/AuthService';
+import { bffRequest, loginWithGoogle, loginWithMicrosoft } from '../services/AuthService';
 import { buildFolderSelection } from '../services/FolderScannerService';
-import { runFolderOrganizer } from '../services/OrganizerService';
+import { runFolderOrganizer, undoLastOrganizerSession } from '../services/OrganizerService';
 import { downloadUpdate } from '../services/update/UpdateService';
 
 export function registerIpcHandlers() {
@@ -25,6 +25,10 @@ export function registerIpcHandlers() {
 
   ipcMain.handle('auth-login-google', async (_event, options) => {
     return loginWithGoogle(options || {});
+  });
+
+  ipcMain.handle('auth-login-microsoft', async (_event, options) => {
+    return loginWithMicrosoft(options || {});
   });
 
   ipcMain.handle('auth-profile', async () => {
@@ -52,6 +56,10 @@ export function registerIpcHandlers() {
 
   ipcMain.handle('run-folder-organizer', async (event, folderPath) => {
     return runFolderOrganizer(event, folderPath);
+  });
+
+  ipcMain.handle('undo-folder-organizer', async (event, folderPath) => {
+    return undoLastOrganizerSession(event, folderPath);
   });
 
   ipcMain.handle('open-external', async (_event, url: string) => {

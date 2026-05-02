@@ -138,13 +138,16 @@ body {
 .oauth-actions{
   display: flex;
   justify-content: flex-start;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .oauth-actions.hidden{
   display: none;
 }
 
-.google-login{
+.google-login,
+.microsoft-login{
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -160,6 +163,31 @@ body {
   color: #1a73e8;
   font-weight: 700;
   font-size: 13px;
+}
+
+.microsoft-mark{
+  width: 20px;
+  height: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 2px;
+}
+
+.microsoft-mark span:nth-child(1){
+  background: #f25022;
+}
+
+.microsoft-mark span:nth-child(2){
+  background: #7fba00;
+}
+
+.microsoft-mark span:nth-child(3){
+  background: #00a4ef;
+}
+
+.microsoft-mark span:nth-child(4){
+  background: #ffb900;
 }
 
 .login-form label{
@@ -430,6 +458,14 @@ body {
   border-color: var(--color-primary);
   color: var(--color-primary);
   background: rgba(26, 66, 74, 0.04);
+}
+
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: var(--color-border);
+  color: var(--color-muted-1);
+  background: transparent;
 }
 
 /* ── Responsive ────────────────────────────────────────────────────────── */

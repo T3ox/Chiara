@@ -115,6 +115,8 @@ export default function App() {
   const [selectedFolderPath, setSelectedFolderPath] = useState<string | null>(null);
   const [selectedFolderLabel, setSelectedFolderLabel] = useState('Nessuna cartella selezionata');
   const [canConfirm, setCanConfirm] = useState(false);
+  const [canUndo, setCanUndo] = useState(false);
+  const [isUndoing, setIsUndoing] = useState(false);
   const [status, setStatus] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
   const [folderSizeWarning, setFolderSizeWarning] = useState('');
@@ -148,6 +150,8 @@ export default function App() {
       setFolderSizeWarning('');
       setStatus('');
       setCanConfirm(false);
+      setCanUndo(false);
+      setIsUndoing(false);
       setIsProfileOpen(false);
       setReadProgress((current) => ({ ...current, visible: false }));
     }
@@ -225,6 +229,7 @@ export default function App() {
       if (!files.length) {
         setSelectedFolderLabel('Nessuna cartella selezionata');
         setCanConfirm(false);
+        setCanUndo(false);
         setFolderSizeWarning('');
         return;
       }
@@ -239,6 +244,7 @@ export default function App() {
       );
       const isValidSize = await validateFolderSize(totalSizeBytes);
       setCanConfirm(isAuthenticated && isValidSize);
+      setCanUndo(false);
       setStatus('');
     },
     [isAuthenticated, validateFolderSize],
@@ -258,6 +264,7 @@ export default function App() {
       );
       const isValidSize = await validateFolderSize(totalSizeBytes);
       setCanConfirm(isAuthenticated && isValidSize);
+      setCanUndo(false);
       setStatus('');
     },
     [isAuthenticated, validateFolderSize],
@@ -328,6 +335,28 @@ export default function App() {
       setStatus('');
     } catch (err) {
       setLoginMessage(err instanceof Error ? err.message : 'Login Google non riuscito.', true);
+    } finally {
+      setLoginPending(false);
+    }
+  }, [applyAuthenticated, setLoginMessage]);
+
+  const handleMicrosoftLogin = useCallback(async () => {
+    if (!window.electronAPI) {
+      setLoginMessage('Bridge Electron non disponibile.', true);
+      return;
+    }
+
+    setLoginPending(true);
+    setLoginMessage('Apertura login Microsoft...');
+
+    try {
+      const sessionPayload = await window.electronAPI.loginWithMicrosoft({ productCode: DEFAULT_PRODUCT_CODE });
+      const profile = mapSessionToProfile(sessionPayload);
+      applyAuthenticated(true, profile);
+      setLoginMessage('Login Microsoft completato.');
+      setStatus('');
+    } catch (err) {
+      setLoginMessage(err instanceof Error ? err.message : 'Login Microsoft non riuscito.', true);
     } finally {
       setLoginPending(false);
     }
@@ -474,17 +503,46 @@ export default function App() {
     }
 
     setCanConfirm(false);
+    setCanUndo(false);
     setStatus('Avvio organizzazione cartella...');
 
     try {
       await window.electronAPI?.runFolderOrganizer(selectedFolderPath);
       setStatus('Organizzazione completata.');
+      setCanUndo(true);
     } catch (err) {
       setStatus(err instanceof Error ? err.message : 'Errore durante esecuzione script Python.');
     } finally {
       setCanConfirm(true);
     }
   }, [isAuthenticated, selectedFolderPath]);
+
+  const handleUndo = useCallback(async () => {
+    if (!isAuthenticated || !selectedFolderPath) {
+      setStatus('Seleziona una cartella prima di annullare le modifiche.');
+      return;
+    }
+
+    if (!canUndo || isUndoing) {
+      return;
+    }
+
+    const restoreCanConfirm = canConfirm;
+    setIsUndoing(true);
+    setCanConfirm(false);
+    setStatus('Annullamento modifiche in corso...');
+
+    try {
+      await window.electronAPI?.undoFolderOrganizer(selectedFolderPath);
+      setStatus('Modifiche annullate.');
+      setCanUndo(false);
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : 'Errore durante undo dello script Python.');
+    } finally {
+      setIsUndoing(false);
+      setCanConfirm(restoreCanConfirm);
+    }
+  }, [canConfirm, canUndo, isAuthenticated, isUndoing, selectedFolderPath]);
 
   const checkForUpdates = useCallback(async () => {
     try {
@@ -642,6 +700,7 @@ export default function App() {
           isPending={loginPending}
           onPasswordLogin={handlePasswordLogin}
           onGoogleLogin={handleGoogleLogin}
+          onMicrosoftLogin={handleMicrosoftLogin}
           onLogout={handleLogout}
         />
 
@@ -683,8 +742,11 @@ export default function App() {
         <FolderActions
           isAuthenticated={isAuthenticated}
           canConfirm={canConfirm}
+          canUndo={canUndo}
+          isUndoing={isUndoing}
           folderPickerRef={folderPickerRef}
           onConfirm={handleConfirm}
+          onUndo={handleUndo}
           onPickerChange={handlePickerChange}
         />
 
