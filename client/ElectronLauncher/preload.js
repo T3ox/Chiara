@@ -9,5 +9,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   loginWithGoogle: (options) => ipcRenderer.invoke('auth-login-google', options),
   getAuthSession: () => ipcRenderer.invoke('auth-session'),
   getAuthProfile: () => ipcRenderer.invoke('auth-profile'),
-  logout: () => ipcRenderer.invoke('auth-logout')
+  logout: () => ipcRenderer.invoke('auth-logout'),
+  selectFolder: () => ipcRenderer.invoke('select-folder'),
+  runFolderOrganizer: (folderPath) => ipcRenderer.invoke('run-folder-organizer', folderPath),
+  onFolderOrganizerOutput: (callback) => ipcRenderer.on('folder-organizer-output', (_event, type, text) => callback(type, text)),
+  openExternal: (url) => ipcRenderer.invoke('open-external', url)
 });
