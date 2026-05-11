@@ -3,22 +3,13 @@ import logging
 from typing import Optional
 from models.datatypes import FileContext, FileType, ErrorCode, ProcessResult
 from config.settings import SUPPORTED_EXTENSIONS
-from .base import BaseParser
-from .pdf_parser import PdfParser
-from .docx_parser import DocxParser
-from .xlsx_parser import XlsxParser
-from .image_parser import ImageParser
+from .screenshot_generator import ScreenshotGenerator
 
 logger = logging.getLogger(__name__)
 
 class FileAnalyzer:
     def __init__(self):
-        self.parsers = {
-            FileType.PDF: PdfParser(),
-            FileType.DOCX: DocxParser(),
-            FileType.EXCEL: XlsxParser(),
-            FileType.IMAGES: ImageParser(),
-        }
+        self.screenshot_gen = ScreenshotGenerator()
 
     def analyze_file(self, file_path: str) -> FileContext:
         file_name = os.path.basename(file_path)
@@ -37,7 +28,10 @@ class FileAnalyzer:
             logger.warning(f"Unknown or unsupported extension for {context.file_name}")
             return context
             
-        parser = self.parsers.get(context.file_type)
-        if parser:
-            return parser.parse(context)
+        screenshot_b64 = self.screenshot_gen.generate_screenshot_b64(context.file_path)
+        if screenshot_b64:
+            context.preview_image_b64 = screenshot_b64
+        else:
+            logger.error(f"Failed to generate screenshot for {context.file_name}")
+            
         return context

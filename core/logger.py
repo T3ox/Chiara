@@ -22,15 +22,21 @@ class ReportGenerator:
         success = [r for r in results if r.success]
         failed = [r for r in results if not r.success]
         
+        total_prompt_tokens = sum(r.prompt_tokens for r in results)
+        total_completion_tokens = sum(r.completion_tokens for r in results)
+        
         report_lines = []
         report_lines.append(f"--- FOLDER ORGANIZER FINAL REPORT ---")
         report_lines.append(f"Total files processed: {total}")
         report_lines.append(f"Successfully moved: {len(success)}")
         report_lines.append(f"Quarantined/Failed: {len(failed)}")
+        report_lines.append(f"Total Prompt Tokens: {total_prompt_tokens}")
+        report_lines.append(f"Total Completion Tokens: {total_completion_tokens}")
+        report_lines.append(f"Total Tokens: {total_prompt_tokens + total_completion_tokens}")
         report_lines.append(f"\n--- SUCCESSFUL MOVES ---")
         
         for r in success:
-            report_lines.append(f"[OK] {os.path.basename(r.original_path)} -> {r.target_folder}/{r.new_name}")
+            report_lines.append(f"[OK] {os.path.basename(r.original_path)} -> {r.target_folder}/{r.new_name} (Tokens: {r.prompt_tokens + r.completion_tokens})")
             
         report_lines.append(f"\n--- FAILURES ---")
         for r in failed:

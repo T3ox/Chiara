@@ -5,3 +5,5 @@ pymupdf
 pillow
 python-dotenv
 pydantic
+beautifulsoup4
+python-pptx

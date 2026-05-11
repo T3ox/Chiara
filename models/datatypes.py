@@ -7,6 +7,8 @@ class FileType(str, Enum):
     DOCX = "docx"
     EXCEL = "excel"
     IMAGES = "images"
+    TEXT = "text"
+    PPTX = "pptx"
     UNKNOWN = "unknown"
 
 class ErrorCode(str, Enum):
@@ -29,6 +31,7 @@ class FileContext(BaseModel):
     extracted_text: Optional[str] = None
     extracted_image_b64: Optional[str] = None
     extracted_pdf_b64: Optional[str] = None
+    preview_image_b64: Optional[str] = None
 
 class GeminiResponse(BaseModel):
     new_name: str = Field(description="Il nuovo nome del file scelto (senza l'estensione)")
@@ -42,3 +45,5 @@ class ProcessResult(BaseModel):
     error_reason: Optional[str] = None
     new_name: Optional[str] = None
     target_folder: Optional[str] = None
+    prompt_tokens: int = 0
+    completion_tokens: int = 0

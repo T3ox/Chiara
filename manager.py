@@ -8,13 +8,14 @@ from core.duplicate_handler import DuplicateHandler
 from core.mover import FileMover
 from core.logger import setup_logger, ReportGenerator
 from parsers.analyzer import FileAnalyzer
-from api.client import GeminiClient
+from api.client import OllamaClient
 
 def main():
     logger = setup_logger()
     logger.info("Starting Gemini Folder Organizer (Python Architecture)")
     
     load_dotenv()
+    load_dotenv(".env.local")
     
     try:
         input_dir, result_dir = InputHandler.request_directories()
@@ -27,7 +28,7 @@ def main():
         
         # Initialize dependencies
         analyzer = FileAnalyzer()
-        gemini = GeminiClient()
+        ai_client = OllamaClient()
         mover = FileMover(result_dir)
         
         files_to_process = [os.path.join(input_dir, f) for f in os.listdir(input_dir) if os.path.isfile(os.path.join(input_dir, f))]
@@ -50,14 +51,14 @@ def main():
                 
             # Parse Content
             context = analyzer.parse_content(context)
-            if not any([context.extracted_text, context.extracted_image_b64, context.extracted_pdf_b64]):
-                err_result = mover.quarantine_file(file_path, ErrorCode.EMPTY_CONTENT, "Failed to extract any content")
+            if not context.preview_image_b64:
+                err_result = mover.quarantine_file(file_path, ErrorCode.EMPTY_CONTENT, "Failed to generate visual screenshot")
                 results.append(err_result)
                 continue
                 
-            # Classify with Gemini
+            # Classify with AI
             try:
-                ai_response = gemini.classify_file(context, available_folders)
+                ai_response, p_tokens, c_tokens = ai_client.classify_file(context, available_folders)
             except Exception as e:
                 err_result = mover.quarantine_file(file_path, ErrorCode.API_ERROR, str(e))
                 results.append(err_result)
@@ -77,6 +78,8 @@ def main():
                 safe_name=safe_name,
                 extension=context.extension
             )
+            success_result.prompt_tokens = p_tokens
+            success_result.completion_tokens = c_tokens
             results.append(success_result)
             
         # Final Report
