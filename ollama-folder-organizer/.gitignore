@@ -3,4 +3,5 @@
 __pycache__/
 *.pyc
 .organizer_history.json
+.llm_usage.jsonl
 INPUT_FILES/

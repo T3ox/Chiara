@@ -4,19 +4,23 @@ import logging
 import os
 import re
 import shutil
+import sys
 from typing import Any, Dict, List
 
 from dotenv import load_dotenv
 
 from constants_py import SUPPORTED_EXTENSIONS, TRUNCATION_LIMITS
 from services.extractor_service import FileExtractor
+from services.llm_gateway import LLMGateway
+from services.llm_usage_logger import LLMUsageLogger
 from services.ollama_service import OllamaService
 from services.undo_manager import UndoManager
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-IGNORED_FILENAMES = {".DS_Store", ".organizer_history.json"}
+LLM_USAGE_LOG_FILENAME = ".llm_usage.jsonl"
+IGNORED_FILENAMES = {".DS_Store", ".organizer_history.json", LLM_USAGE_LOG_FILENAME}
 
 
 def sanitize_name(name: str) -> str:
@@ -37,7 +41,7 @@ def should_skip_file(file_path: str) -> bool:
 
 async def process_file(
     file_path: str,
-    llm: OllamaService,
+    llm: LLMGateway,
     result_dir: str,
     available_folders: List[str],
     dry_run: bool,
@@ -76,7 +80,7 @@ async def process_file(
             return {"success": False, "code": "EMPTY", "reason": "Contenuto non estraibile"}
 
         try:
-            raw_result = await classify_with_retries(llm, file_type, content, file_name, available_folders)
+            raw_result = await llm.classify_file(file_type, content, file_name, available_folders)
         except Exception as exc:
             logger.warning("LLM failed for %s: %s. Using local name extraction.", file_name, exc)
             raw_result = review_classification(file_name, content, available_folders)
@@ -126,27 +130,6 @@ async def process_file(
     except Exception as exc:
         logger.error("Error processing %s: %s", file_name, exc)
         return {"success": False, "code": "LLM", "reason": str(exc)}
-
-
-async def classify_with_retries(
-    llm: OllamaService,
-    file_type: str,
-    content: Dict[str, str],
-    file_name: str,
-    available_folders: List[str],
-) -> str:
-    delays: List[int] = []
-
-    for attempt in range(1):
-        try:
-            return await llm.classify_file(file_type, content, file_name, available_folders)
-        except Exception as exc:
-            if attempt >= len(delays):
-                raise
-            logger.warning("Errore temporaneo per %s: %s. Retry in %ss...", file_name, exc, delays[attempt])
-            await asyncio.sleep(delays[attempt])
-
-    return ""
 
 
 def unique_path(path: str) -> str:
@@ -289,7 +272,7 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-async def main() -> None:
+async def main() -> int:
     load_dotenv(os.path.join(BASE_DIR, ".env"))
     args = build_parser().parse_args()
 
@@ -299,13 +282,18 @@ async def main() -> None:
 
     if not os.path.isdir(input_dir) or not os.path.isdir(result_dir):
         print("Error: input_dir o result_dir non validi.")
-        return
+        return 1
 
-    llm = OllamaService(
+    ollama = OllamaService(
         model=args.model,
         vision_model=args.vision_model,
         base_url=args.base_url,
         timeout=args.timeout,
+    )
+    usage_logger = LLMUsageLogger(os.path.join(result_dir, LLM_USAGE_LOG_FILENAME))
+    llm = LLMGateway(
+        ollama,
+        usage_logger,
     )
     print(f"Modello Ollama testo: {args.model}")
     print(f"Modello Ollama vision: {args.vision_model}")
@@ -314,17 +302,37 @@ async def main() -> None:
     print(f"Dry run: {'si' if args.dry_run else 'no'}")
 
     try:
-        installed_models = await llm.check_connection()
+        installed_models = await ollama.check_connection()
     except Exception as exc:
+        usage_logger.log(
+            operation="check_connection",
+            model=args.model,
+            input_tokens=None,
+            output_tokens=None,
+            duration_ms=0,
+            attempts=1,
+            errors=[str(exc)],
+            success=False,
+        )
         print(f"\nError: {exc}")
         print("Nessun file e stato processato o spostato.")
-        return
+        return 1
 
     if not model_is_available(args.model, installed_models):
+        usage_logger.log(
+            operation="check_connection",
+            model=args.model,
+            input_tokens=None,
+            output_tokens=None,
+            duration_ms=0,
+            attempts=1,
+            errors=[f"Modello '{args.model}' non trovato in Ollama."],
+            success=False,
+        )
         print(f"\nError: modello '{args.model}' non trovato in Ollama.")
         print(f"Esegui: ollama pull {args.model}")
         print("Nessun file e stato processato o spostato.")
-        return
+        return 1
 
     if not model_is_available(args.vision_model, installed_models):
         print(f"Warning: modello vision '{args.vision_model}' non trovato.")
@@ -401,6 +409,7 @@ async def main() -> None:
     print("\nRun completed.")
     print(f"Processed: {done}/{total}")
     print(f"Failed: {failed}")
+    return 0
 
 
 def model_is_available(model_name: str, installed_models: List[str]) -> bool:
@@ -409,4 +418,4 @@ def model_is_available(model_name: str, installed_models: List[str]) -> bool:
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    sys.exit(asyncio.run(main()))

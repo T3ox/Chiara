@@ -2,11 +2,22 @@ import asyncio
 import json
 import re
 import socket
+import time
 import urllib.error
 import urllib.request
+from dataclasses import dataclass
 from typing import Dict, List, Optional
 
 from constants_py import PROMPTS
+
+
+@dataclass(frozen=True)
+class LLMResponse:
+    content: str
+    model: str
+    input_tokens: Optional[int]
+    output_tokens: Optional[int]
+    duration_ms: int
 
 
 class OllamaService:
@@ -32,6 +43,16 @@ class OllamaService:
         file_name: str,
         available_folders: List[str],
     ) -> str:
+        response = await self.classify_file_with_usage(file_type, content, file_name, available_folders)
+        return response.content
+
+    async def classify_file_with_usage(
+        self,
+        file_type: str,
+        content: Dict[str, str],
+        file_name: str,
+        available_folders: List[str],
+    ) -> LLMResponse:
         prompt_config = PROMPTS.get(file_type, PROMPTS["default"])
         payload = {
             "nome_file_originale": file_name,
@@ -52,10 +73,20 @@ class OllamaService:
         )
         images = [content["image_data"]] if content.get("image_data") else None
 
-        text = await self._chat(prompt_config["system"], user_content, images=images)
-        return self._clean_output(text)
+        response = await self._chat_with_usage(prompt_config["system"], user_content, images=images)
+        return LLMResponse(
+            content=self._clean_output(response.content),
+            model=response.model,
+            input_tokens=response.input_tokens,
+            output_tokens=response.output_tokens,
+            duration_ms=response.duration_ms,
+        )
 
     async def repair_output(self, raw: str, folders: List[str]) -> str:
+        response = await self.repair_output_with_usage(raw, folders)
+        return response.content
+
+    async def repair_output_with_usage(self, raw: str, folders: List[str]) -> LLMResponse:
         instruction = {
             "regole": [
                 "Riformatta il testo ricevuto nel formato: NuovoNomeDelFile___CartellaDiDestinazione",
@@ -65,13 +96,28 @@ class OllamaService:
             "cartelle_disponibili": folders,
             "testo_ricevuto": raw,
         }
-        text = await self._chat(
+        response = await self._chat_with_usage(
             "Correggi output di classificazione file. Rispondi solo con la stringa richiesta.",
             json.dumps(instruction, ensure_ascii=False),
         )
-        return self._clean_output(text)
+        return LLMResponse(
+            content=self._clean_output(response.content),
+            model=response.model,
+            input_tokens=response.input_tokens,
+            output_tokens=response.output_tokens,
+            duration_ms=response.duration_ms,
+        )
 
     async def _chat(self, system: str, user: str, images: Optional[List[str]] = None) -> str:
+        response = await self._chat_with_usage(system, user, images=images)
+        return response.content
+
+    async def _chat_with_usage(
+        self,
+        system: str,
+        user: str,
+        images: Optional[List[str]] = None,
+    ) -> LLMResponse:
         model = self.vision_model if images else self.model
         return await asyncio.to_thread(self._chat_sync, model, system, user, images)
 
@@ -81,7 +127,7 @@ class OllamaService:
         system: str,
         user: str,
         images: Optional[List[str]],
-    ) -> str:
+    ) -> LLMResponse:
         message = {"role": "user", "content": user}
         if images:
             message["images"] = images
@@ -108,6 +154,7 @@ class OllamaService:
             method="POST",
         )
 
+        started = time.perf_counter()
         try:
             with urllib.request.urlopen(request, timeout=self.timeout) as response:
                 body = json.loads(response.read().decode("utf-8"))
@@ -122,7 +169,14 @@ class OllamaService:
         if "error" in body:
             raise RuntimeError(body["error"])
 
-        return body.get("message", {}).get("content", "").strip()
+        duration_ms = int((time.perf_counter() - started) * 1000)
+        return LLMResponse(
+            content=body.get("message", {}).get("content", "").strip(),
+            model=body.get("model") or model,
+            input_tokens=body.get("prompt_eval_count"),
+            output_tokens=body.get("eval_count"),
+            duration_ms=duration_ms,
+        )
 
     def _list_models_sync(self) -> List[str]:
         request = urllib.request.Request(f"{self.base_url}/api/tags", method="GET")

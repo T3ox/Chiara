@@ -65,6 +65,8 @@ Prima di spostare file dubbi puoi usare la modalita anteprima:
 python main.py --input-dir "/percorso/cartella-da-organizzare" --dry-run
 ```
 
+Ogni chiamata LLM passa da un gateway centralizzato e viene registrata in `.llm_usage.jsonl` dentro la cartella di output. Il file e in formato JSONL, una riga per operazione, e contiene solo metadati: timestamp, operazione, modello usato, token input/output, durata, numero tentativi, errori sintetici e stato finale. Non salva prompt, testo estratto o nomi file.
+
 Ogni esecuzione registra le operazioni in `.organizer_history.json` dentro la cartella di output. Le rinomine in origine sono salvate con `action: "rename_in_place"` e `target_folder: ""`; gli spostamenti in revisione usano `action: "move_to_review"` o `action: "quarantine"`. Per annullare l'ultima sessione completata:
 
 ```bash

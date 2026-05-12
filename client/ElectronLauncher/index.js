@@ -185,7 +185,11 @@ function runFolderOrganizer(event, folderPath) {
         return;
       }
 
-      reject(new Error(`Ollama Folder Organizer terminato con codice ${code}.`));
+      const details = output.join('').trim();
+      const message = details
+        ? `Ollama Folder Organizer terminato con codice ${code}.\n${details}`
+        : `Ollama Folder Organizer terminato con codice ${code}.`;
+      reject(new Error(message));
     });
   });
 }
