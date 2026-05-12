@@ -46,8 +46,8 @@ class OllamaService:
 
         user_content = (
             "Classifica e rinomina il file seguendo esattamente queste istruzioni. "
-            "Rispondi con JSON valido e nessun markdown: "
-            '{"new_name":"NomeFileSenzaEstensione","target_folder":"Cartella","reasoning":"motivo breve"}\n'
+            "Rispondi solo con JSON valido su una singola riga e nessun markdown: "
+            '{"new_name":"NomeFileSenzaEstensione","target_folder":"Cartella"}\n'
             f"{json.dumps(payload, ensure_ascii=False, separators=(',', ':'))}"
         )
         images = [content["image_data"]] if content.get("image_data") else None
@@ -58,15 +58,17 @@ class OllamaService:
     async def repair_output(self, raw: str, folders: List[str]) -> str:
         instruction = {
             "regole": [
-                "Riformatta il testo ricevuto nel formato: NuovoNomeDelFile___CartellaDiDestinazione",
+                "Riformatta il testo ricevuto come JSON valido su una singola riga.",
+                'Formato esatto: {"new_name":"NomeFileSenzaEstensione","target_folder":"CartellaEsistente"}',
                 "Usa ESATTAMENTE UNA cartella tra quelle disponibili.",
-                "Nessun altro testo, una sola riga.",
+                "Non inventare cartelle.",
+                "Nessun markdown, nessuna spiegazione, nessun testo extra.",
             ],
             "cartelle_disponibili": folders,
             "testo_ricevuto": raw,
         }
         text = await self._chat(
-            "Correggi output di classificazione file. Rispondi solo con la stringa richiesta.",
+            "Correggi output di classificazione file. Rispondi solo con JSON valido.",
             json.dumps(instruction, ensure_ascii=False),
         )
         return self._clean_output(text)
@@ -96,7 +98,7 @@ class OllamaService:
             "options": {
                 "temperature": 0.1,
                 "num_ctx": 2048,
-                "num_predict": 40,
+                "num_predict": 80,
                 "stop": ["\n"],
             },
         }
