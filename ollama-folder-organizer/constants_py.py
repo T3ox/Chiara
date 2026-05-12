@@ -12,80 +12,76 @@ TRUNCATION_LIMITS = {
     "TEXT_MAX_LINES": 150,
 }
 
+COMMON_RULES = [
+    "Rispondi SOLO con JSON valido su una singola riga.",
+    'Formato esatto: {"new_name":"NomeFileSenzaEstensione","target_folder":"CartellaEsistente"}',
+    "Non usare markdown, code block, spiegazioni o testo extra.",
+    "Il JSON deve contenere solo le chiavi new_name e target_folder.",
+    "target_folder deve essere ESATTAMENTE una delle cartelle_disponibili.",
+    "Non inventare cartelle.",
+    "Se sei incerto, scegli DaRevisionare se presente, altrimenti la prima cartella disponibile.",
+    "new_name deve essere senza estensione.",
+    "new_name deve essere corto, chiaro e descrittivo, massimo 60 caratteri.",
+    "new_name puo contenere solo lettere, numeri, spazi, trattini e underscore.",
+    "Non usare caratteri speciali come slash, backslash, due punti, asterischi, virgolette, minore, maggiore o pipe.",
+    "Usa il contenuto estratto come fonte principale, non solo il nome originale del file.",
+    "Se trovi una data importante, usa il formato YYYY-MM-DD quando il giorno e noto, altrimenti YYYY-MM.",
+    "Se il contenuto e vuoto, ambiguo o impossibile da classificare, usa new_name DA_REVISIONARE e target_folder DaRevisionare.",
+]
+
 PROMPTS = {
     "default": {
-        "system": "Sei un classificatore per archivio digitale. Output strettamente vincolato.",
-        "user_rules": [
-            "Scegli ESATTAMENTE UNA cartella tra cartelle_disponibili.",
-            "Non inventare cartelle. Se incerto, scegli 'DaRevisionare' se presente, altrimenti la prima cartella della lista.",
-            "Crea un nome file corto e chiaro, massimo 60 caratteri, senza estensione.",
-            "Non usare caratteri speciali: solo lettere, numeri, underscore e trattini.",
-            "Output OBBLIGATORIO in una singola riga, nel formato: NuovoNomeDelFile___CartellaDiDestinazione",
-            "NON usare markdown, NON usare code block, SOLO il testo grezzo.",
-            "Se il file è impossibile da classificare, usa: DA_REVISIONARE___DaRevisionare",
-            "Nessun altro testo.",
+        "system": "Sei un classificatore per archivio digitale.",
+        "istruzioni": COMMON_RULES + [
+            "Analizza il contenuto disponibile e scegli il nome e la cartella piu adatti.",
         ],
     },
     "pdf": {
-        "system": "Sei un assistente specializzato nell'analisi rapida di documenti PDF per archivio digitale.",
-        "istruzioni": [
+        "system": "Sei un classificatore di documenti PDF per archivio digitale.",
+        "istruzioni": COMMON_RULES + [
             "Analizza il testo estratto dal PDF e, se presente, l'immagine della prima pagina.",
-            "Identifica se è una fattura, contratto, preventivo, documento tecnico, relazione o altro.",
-            "Rinomina il file in modo chiaro, ordinato e sintetico.",
-            "Usa nomi del tipo: Anno-Mese-Giorno_TipoDocumento_DescrizioneBreve quando i dati sono disponibili.",
-            "Scegli UNA cartella tra quelle disponibili.",
-            "NON inventare cartelle.",
-            "Restituisci SOLO la stringa nel formato richiesto.",
+            "Identifica se e fattura, contratto, preventivo, relazione, documento tecnico, modulo, scansione o altro.",
+            "Se riconosci cliente, progetto, ente, numero documento o oggetto principale, usali nel nome in forma breve.",
         ],
     },
     "docx": {
-        "system": "Sei un assistente specializzato nell'analisi rapida di documenti Word per archivio digitale.",
-        "istruzioni": [
+        "system": "Sei un classificatore di documenti Word per archivio digitale.",
+        "istruzioni": COMMON_RULES + [
             "Analizza il contenuto del documento.",
-            "Capisci se è una lettera, un contratto, un testo tecnico, una relazione o un documento amministrativo.",
-            "Rinomina il file in modo chiaro, ordinato e sintetico.",
-            "Scegli UNA cartella tra quelle disponibili.",
-            "Restituisci SOLO la stringa nel formato richiesto.",
+            "Identifica se e lettera, contratto, relazione, testo tecnico, documento amministrativo, manuale o appunti.",
+            "Se il documento sembra una versione o copia ripristinata, conserva un nome base pulito senza parole ridondanti.",
         ],
     },
     "excel": {
-        "system": "Sei un assistente specializzato nell'analisi rapida di fogli Excel per archivio digitale.",
-        "istruzioni": [
+        "system": "Sei un classificatore di fogli Excel e CSV per archivio digitale.",
+        "istruzioni": COMMON_RULES + [
             "Analizza il contenuto del foglio Excel.",
-            "Capisci se si tratta di contabilita, preventivi, report, analisi o calcoli.",
-            "Rinomina il file in modo chiaro, sintetico e ordinato.",
-            "Scegli UNA cartella tra quelle disponibili.",
-            "Restituisci SOLO la stringa nel formato richiesto.",
+            "Identifica se riguarda contabilita, preventivi, report, vendite, liste, analisi, calcoli, inventario o dati grezzi.",
+            "Se il foglio contiene un periodo o anno evidente, includilo nel nome.",
         ],
     },
     "presentation": {
-        "system": "Sei un assistente specializzato nell'analisi rapida di presentazioni PowerPoint per archivio digitale.",
-        "istruzioni": [
+        "system": "Sei un classificatore di presentazioni PowerPoint per archivio digitale.",
+        "istruzioni": COMMON_RULES + [
             "Analizza titolo, testi delle slide e note disponibili.",
-            "Capisci se si tratta di una presentazione commerciale, tecnica, formativa, report, proposta o altro.",
-            "Rinomina il file in modo chiaro, sintetico e ordinato.",
-            "Scegli UNA cartella tra quelle disponibili.",
-            "Restituisci SOLO la stringa nel formato richiesto.",
+            "Identifica se e presentazione commerciale, tecnica, formativa, report, proposta o materiale interno.",
+            "Usa il titolo o il tema principale delle slide come soggetto breve.",
         ],
     },
     "images": {
-        "system": "Sei un assistente specializzato nell'analisi rapida di immagini per archivio digitale.",
-        "istruzioni": [
+        "system": "Sei un classificatore di immagini per archivio digitale.",
+        "istruzioni": COMMON_RULES + [
             "Osserva l'immagine se il modello locale supporta input visuali.",
-            "Capisci se si tratta di una foto di cantiere, un documento scansionato, una schermata, un progetto o altro.",
-            "Rinomina l'immagine in modo descrittivo ma breve.",
-            "Scegli UNA cartella tra quelle disponibili.",
-            "Restituisci SOLO la stringa nel formato richiesto.",
+            "Identifica se e foto, scansione documento, screenshot, ricevuta, progetto tecnico, magazzino, cantiere o altro.",
+            "Se l'immagine e poco chiara o generica, scegli DaRevisionare.",
         ],
     },
     "text": {
-        "system": "Sei un assistente specializzato nell'analisi rapida di file testuali e codice per archivio digitale.",
-        "istruzioni": [
+        "system": "Sei un classificatore di file testuali e codice per archivio digitale.",
+        "istruzioni": COMMON_RULES + [
             "Analizza il contenuto testuale effettivo, non solo il nome file.",
-            "Capisci se si tratta di note, codice, configurazione, report, log o documento operativo.",
-            "Rinomina il file in modo chiaro, sintetico e ordinato.",
-            "Scegli UNA cartella tra quelle disponibili.",
-            "Restituisci SOLO la stringa nel formato richiesto.",
+            "Identifica se e nota, codice, configurazione, log, documentazione, report, dati o documento operativo.",
+            "Se e codice, includi linguaggio o scopo quando riconoscibile.",
         ],
     },
 }
