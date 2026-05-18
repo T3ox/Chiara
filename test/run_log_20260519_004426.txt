@@ -1,0 +1,15 @@
+--- FOLDER ORGANIZER FINAL REPORT ---
+Total files processed: 4
+Successfully moved: 0
+Quarantined/Failed: 4
+Total Prompt Tokens: 0
+Total Completion Tokens: 0
+Total Tokens: 0
+
+--- SUCCESSFUL MOVES ---
+
+--- FAILURES ---
+[FAIL] Attivit di contatto e trattativa interventi su esiti e sottoesiti.docx -> Error: ErrorCode.QUARANTINED (Quarantined: API - HTTPConnectionPool(host='localhost', port=11434): Max retries exceeded with url: /api/generate (Caused by NewConnectionError("HTTPConnection(host='localhost', port=11434): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it")))
+[FAIL] Esempio colloquio.pdf -> Error: ErrorCode.QUARANTINED (Quarantined: API - HTTPConnectionPool(host='localhost', port=11434): Max retries exceeded with url: /api/generate (Caused by NewConnectionError("HTTPConnection(host='localhost', port=11434): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it")))
+[FAIL] Lead Management modello geo-meritocratico.pptx -> Error: ErrorCode.QUARANTINED (Quarantined: API - HTTPConnectionPool(host='localhost', port=11434): Max retries exceeded with url: /api/generate (Caused by NewConnectionError("HTTPConnection(host='localhost', port=11434): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it")))
+[FAIL] Salesforce Lead Management - Modello geo-meritocratico Modello di.pptx -> Error: ErrorCode.QUARANTINED (Quarantined: API - HTTPConnectionPool(host='localhost', port=11434): Max retries exceeded with url: /api/generate (Caused by NewConnectionError("HTTPConnection(host='localhost', port=11434): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it")))
