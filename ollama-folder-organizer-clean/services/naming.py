@@ -14,6 +14,7 @@ UNCERTAIN_NAMES = {
     "nuovonomedelfile",
     "nuovonomefile",
     "nomefile",
+    "nomefilesenzaestensione",
     "newfilename",
     "filename",
     "file",

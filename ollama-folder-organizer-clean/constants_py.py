@@ -23,6 +23,7 @@ COMMON_RULES = [
     "target_folder deve essere ESATTAMENTE una delle cartelle_disponibili.",
     "Non inventare cartelle.",
     "Se sei incerto, usa confidence low e scegli DaRevisionare.",
+    "new_name deve sempre essere il miglior nome descrittivo possibile, anche quando target_folder e DaRevisionare.",
     "Usa confidence high solo quando nome e cartella sono molto affidabili.",
     "Usa confidence medium quando il contenuto e sufficiente ma non perfetto.",
     "Usa confidence low quando il contenuto e scarso, ambiguo, generico o non classificabile.",
@@ -33,7 +34,7 @@ COMMON_RULES = [
     "Usa il contenuto estratto come fonte principale, non solo il nome originale del file.",
     "Se trovi una data importante, usa il formato YYYY-MM-DD quando il giorno e noto, altrimenti YYYY-MM.",
     "reason deve essere una frase breve in italiano, massimo 140 caratteri.",
-    "Se il contenuto e vuoto, ambiguo o impossibile da classificare, usa new_name DA_REVISIONARE, target_folder DaRevisionare, confidence low.",
+    "Se il contenuto e vuoto, ambiguo o impossibile da classificare, usa il miglior new_name ricavabile dal nome originale, target_folder DaRevisionare, confidence low.",
 ]
 
 PROMPTS = {
@@ -76,11 +77,13 @@ PROMPTS = {
         ],
     },
     "images": {
-        "system": "Sei un classificatore di immagini per archivio digitale.",
+        "system": "Sei un classificatore di immagini per archivio digitale. Rispondi solo con JSON valido.",
         "istruzioni": COMMON_RULES + [
-            "Osserva l'immagine se il modello locale supporta input visuali.",
-            "Identifica se e foto, scansione documento, screenshot, ricevuta, progetto tecnico, magazzino, cantiere o altro.",
-            "Se l'immagine e poco chiara o generica, scegli DaRevisionare.",
+            "Analizza il contenuto visivo dell'immagine.",
+            "Identifica soggetto principale, tipo immagine e contesto visibile.",
+            "Se e screenshot, foto, scansione, illustrazione, ricevuta o documento fotografato, riflettilo nel nome.",
+            "Se riconosci un soggetto specifico, usalo nel new_name.",
+            "Se non puoi identificare il soggetto, usa un nome descrittivo generico ma utile.",
         ],
     },
     "text": {

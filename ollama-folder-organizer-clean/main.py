@@ -9,6 +9,7 @@ from typing import Dict, List, Optional, Set
 from constants_py import REVIEW_FOLDER
 from services.llm_gateway import LLMGateway
 from services.llm_usage_logger import LLMUsageLogger
+from services.grouping_service import apply_auto_groups
 from services.naming import unique_path
 from services.ollama_service import OllamaService
 from services.organizer_types import FileAction
@@ -56,7 +57,8 @@ def build_parser() -> argparse.ArgumentParser:
 async def main() -> int:
     load_dotenv(os.path.join(BASE_DIR, ".env"))
     args = build_parser().parse_args()
-    from services.organizer_service import process_scanned_file
+    from services.file_executor import execute_action
+    from services.organizer_service import plan_scanned_file
 
     input_dir = os.path.abspath(args.input_dir)
     dry_run = not args.apply
@@ -82,7 +84,7 @@ async def main() -> int:
 
     files = scan_files(input_dir, target_folders)
     stats = {"done": 0, "planned": 0, "review": 0, "skipped": 0, "failed": 0}
-    reserved_dry_run_paths: Set[str] = set()
+    reserved_paths: Set[str] = set()
 
     print("\n--- Ollama Folder Organizer Clean ---")
     print(f"Cartella: {input_dir}")
@@ -92,16 +94,20 @@ async def main() -> int:
     print(f"Token log: {usage_log_path}")
     print(f"File trovati: {len(files)}\n")
 
+    planned_actions = []
     for scanned_file in files:
-        action = await process_scanned_file(
+        action = await plan_scanned_file(
             scanned_file,
             llm=llm,
             target_folders=target_folders,
-            dry_run=dry_run,
-            undo_manager=undo_manager,
         )
-        if dry_run:
-            action = _reserve_dry_run_path(action, reserved_dry_run_paths)
+        planned_actions.append(action)
+
+    planned_actions = apply_auto_groups(files, planned_actions)
+
+    for scanned_file, planned_action in zip(files, planned_actions):
+        planned_action = _reserve_planned_path(planned_action, reserved_paths)
+        action = execute_action(planned_action, dry_run=dry_run, undo_manager=undo_manager)
         reporter.write(build_record(session_id, scanned_file, action, dry_run))
         _update_stats(stats, action.status)
         _print_action(scanned_file.relative_path, action)
@@ -188,7 +194,7 @@ def _print_action(relative_path: str, action) -> None:
     print(f"{action.status.upper():8} {action.action:14} {relative_path} -> {target} | {action.reason}")
 
 
-def _reserve_dry_run_path(action: FileAction, reserved_paths: Set[str]) -> FileAction:
+def _reserve_planned_path(action: FileAction, reserved_paths: Set[str]) -> FileAction:
     if not action.new_path:
         return action
 

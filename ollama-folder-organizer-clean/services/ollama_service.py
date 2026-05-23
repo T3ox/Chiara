@@ -65,15 +65,19 @@ class OllamaService:
         if "istruzioni" in prompt_config:
             payload["istruzioni"] = prompt_config["istruzioni"]
 
-        user_content = (
-            "Classifica e rinomina il file seguendo esattamente queste istruzioni. "
-            "Rispondi solo con JSON valido su una singola riga e nessun markdown: "
-            '{"new_name":"NomeFileSenzaEstensione","target_folder":"Cartella","confidence":"high|medium|low","reason":"Motivo breve"}\n'
-            f"{json.dumps(payload, ensure_ascii=False, separators=(',', ':'))}"
-        )
         images = [content["image_data"]] if content.get("image_data") else None
+        if images:
+            user_content = self._image_user_content(file_name, available_folders)
+        else:
+            user_content = (
+                "Classifica e rinomina il file seguendo esattamente queste istruzioni. "
+                "Rispondi solo con JSON valido su una singola riga e nessun markdown: "
+                '{"new_name":"NomeFileSenzaEstensione","target_folder":"Cartella","confidence":"high|medium|low","reason":"Motivo breve"}\n'
+                f"{json.dumps(payload, ensure_ascii=False, separators=(',', ':'))}"
+            )
 
-        response = await self._chat_with_usage(prompt_config["system"], user_content, images=images)
+        system_prompt = "Rispondi solo con JSON valido." if images else prompt_config["system"]
+        response = await self._chat_with_usage(system_prompt, user_content, images=images)
         return LLMResponse(
             content=self._clean_output(response.content),
             model=response.model,
@@ -145,22 +149,24 @@ class OllamaService:
             "options": {
                 "temperature": 0.1,
                 "num_ctx": 8192,
-                "num_predict": 180,
-                "stop": ["\n"],
+                "num_predict": 400 if images else 180,
             },
         }
-
-        request = urllib.request.Request(
-            f"{self.base_url}/api/chat",
-            data=json.dumps(request_payload).encode("utf-8"),
-            headers={"Content-Type": "application/json"},
-            method="POST",
-        )
+        if images:
+            request_payload["think"] = False
+            request_payload["options"]["think"] = False
+        else:
+            request_payload["options"]["stop"] = ["\n"]
 
         started = time.perf_counter()
         try:
-            with urllib.request.urlopen(request, timeout=self.timeout) as response:
-                body = json.loads(response.read().decode("utf-8"))
+            body = self._send_chat_request(request_payload)
+            message_body = body.get("message", {})
+            if images and not (message_body.get("content") or "").strip() and not message_body.get("thinking"):
+                retry_payload = json.loads(json.dumps(request_payload))
+                retry_payload.pop("think", None)
+                retry_payload.get("options", {}).pop("think", None)
+                body = self._send_chat_request(retry_payload)
         except (socket.timeout, TimeoutError) as exc:
             raise RuntimeError(f"Ollama ha superato il timeout di {self.timeout}s.") from exc
         except urllib.error.URLError as exc:
@@ -173,13 +179,28 @@ class OllamaService:
             raise RuntimeError(body["error"])
 
         duration_ms = int((time.perf_counter() - started) * 1000)
+        message_body = body.get("message", {})
+        content = (message_body.get("content") or "").strip()
+        if not content and message_body.get("thinking"):
+            content = str(message_body.get("thinking") or "").strip()
+
         return LLMResponse(
-            content=body.get("message", {}).get("content", "").strip(),
+            content=content,
             model=body.get("model") or model,
             input_tokens=body.get("prompt_eval_count"),
             output_tokens=body.get("eval_count"),
             duration_ms=duration_ms,
         )
+
+    def _send_chat_request(self, request_payload: Dict[str, object]) -> Dict[str, object]:
+        request = urllib.request.Request(
+            f"{self.base_url}/api/chat",
+            data=json.dumps(request_payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(request, timeout=self.timeout) as response:
+            return json.loads(response.read().decode("utf-8"))
 
     def _list_models_sync(self) -> List[str]:
         request = urllib.request.Request(f"{self.base_url}/api/tags", method="GET")
@@ -195,6 +216,19 @@ class OllamaService:
             ) from exc
 
         return [model.get("name", "") for model in body.get("models", []) if model.get("name")]
+
+    @staticmethod
+    def _image_user_content(file_name: str, available_folders: List[str]) -> str:
+        folders = json.dumps(available_folders, ensure_ascii=False)
+        return (
+            "Rispondi direttamente solo con JSON compatto, senza ragionamento, markdown o testo extra: "
+            '{"new_name":"NomeFileSenzaEstensione","target_folder":"CartellaEsistente",'
+            '"confidence":"high|medium|low","reason":"Motivo breve"}. '
+            f"Cartelle disponibili: {folders}. "
+            f"Nome file originale: {file_name}. "
+            "Analizza l'immagine e proponi sempre un new_name descrittivo senza estensione. "
+            "target_folder deve essere una delle cartelle disponibili."
+        )
 
     @staticmethod
     def _clean_output(text: str) -> str:

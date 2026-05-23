@@ -5,12 +5,13 @@ import unittest
 from typing import Optional
 
 from constants_py import REVIEW_FOLDER
-from main import _reserve_dry_run_path
+from main import _reserve_planned_path
 from services.classifier_service import parse_classification
 from services.decision_service import action_for_unsupported, decide_action
 from services.file_executor import execute_action
+from services.grouping_service import apply_auto_groups
 from services.naming import sanitize_name, unique_path
-from services.organizer_types import ClassificationResult, ScannedFile
+from services.organizer_types import ClassificationResult, FileAction, ScannedFile
 from services.run_reporter import RunReporter, build_record
 from services.scanner_service import list_target_folders, scan_files
 from services.undo_manager import UndoManager
@@ -38,7 +39,7 @@ class OrganizerUnitTests(unittest.TestCase):
         )
         self.assertEqual(action.action, "move_to_review")
         self.assertEqual(action.target_folder, REVIEW_FOLDER)
-        self.assertEqual(action.new_name, "file.txt")
+        self.assertEqual(action.new_name, "Nome.txt")
 
     def test_unique_path_adds_suffix(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -96,8 +97,8 @@ class OrganizerIntegrationTests(unittest.TestCase):
             action = _action(first)
             reserved = set()
 
-            first_result = _reserve_dry_run_path(action, reserved)
-            second_result = _reserve_dry_run_path(action, reserved)
+            first_result = _reserve_planned_path(action, reserved)
+            second_result = _reserve_planned_path(action, reserved)
 
         self.assertEqual(first_result.new_path, first)
         self.assertEqual(second_result.new_path, os.path.join(tmpdir, "target_2.txt"))
@@ -129,7 +130,7 @@ class OrganizerIntegrationTests(unittest.TestCase):
             self.assertTrue(os.path.exists(source))
             self.assertFalse(os.path.exists(moved))
 
-    def test_review_keeps_original_name(self):
+    def test_review_uses_proposed_name_when_available(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             source = os.path.join(tmpdir, "source.txt")
             _write(source, "contenuto")
@@ -142,7 +143,24 @@ class OrganizerIntegrationTests(unittest.TestCase):
             result = execute_action(action, dry_run=False)
 
             self.assertEqual(result.status, "done")
-            self.assertTrue(os.path.exists(os.path.join(tmpdir, REVIEW_FOLDER, "source.txt")))
+            self.assertTrue(os.path.exists(os.path.join(tmpdir, REVIEW_FOLDER, "Qualcosa.txt")))
+
+    def test_auto_group_creates_folder_for_three_similar_images(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            scanned_files = [
+                _scanned(os.path.join(tmpdir, f"img{index}.jpg"), tmpdir, f"img{index}.jpg", "images")
+                for index in range(3)
+            ]
+            actions = [
+                _action(os.path.join(tmpdir, REVIEW_FOLDER, f"Panorama Montagna {index}.jpg"))
+                for index in range(3)
+            ]
+
+            grouped = apply_auto_groups(scanned_files, actions)
+
+        self.assertTrue(all(action.action == "rename_move" for action in grouped))
+        self.assertTrue(all(action.target_folder == "Immagini Panorama" for action in grouped))
+        self.assertTrue(all("/Immagini Panorama/" in action.new_path for action in grouped))
 
 
 def _scanned(path: str, root: str, relative_path: str, file_type: Optional[str]) -> ScannedFile:
@@ -164,8 +182,6 @@ def _write(path: str, content: str) -> None:
 
 
 def _action(path: str):
-    from services.organizer_types import FileAction
-
     return FileAction(
         action="rename_move",
         old_path="/tmp/source.txt",
